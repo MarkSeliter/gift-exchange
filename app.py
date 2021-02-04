@@ -5,8 +5,7 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
 
-# my helper func
-from helper import login_required, check_email
+from helper import login_required, check_email, db
 
 # configure the a flask app
 app = Flask(__name__)
@@ -27,11 +26,6 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
-
-# connect to the database within the app folder
-conn = sqlite3.connect("database.db")
-# the cursor for the database
-c = conn.cursor()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -99,10 +93,11 @@ def register():
             return redirect("/register")
 
         # Checks if username already exists
-        rows = c.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
         if len(rows) != 0:
-            flash(f"Sorry, {username} is already taken")
+            flash(f"Sorry, that username is already taken")
             return redirect("/register")
+
 
         # Checks if email is empty
         if request.form.get("email") == "":
@@ -130,16 +125,18 @@ def register():
             return redirect("/register")
 
         # now that everything checks out that we can insert into the database
-        c.execute("INSERT INTO users (username, hash, email) VALUES (?, ?)", \
+        db("INSERT INTO users (username, hash, email) VALUES ('{}', '{}', '{}')".format(\
             request.form.get("username"), \
             generate_password_hash(request.form.get("password1")), \
-            request.form.get("email"))
+            request.form.get("email")\
+            ))
 
         # to improve user experience it logs in the user right after registering
-        rows = c.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
         session["user_id"] = rows[0]["id"]
         flash("You've registered successfully!")
         return redirect("/")
 
     # if its a get method (load the register page to register)
     return render_template("register.html")
+
