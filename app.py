@@ -32,7 +32,24 @@ Session(app)
 @login_required
 def index():
     """The main page (supposed to show only if logged in)"""
-    return render_template("index.html")
+
+    # request to see friend's profile
+    # if request.method == "POST":
+
+    # request to see your own profile
+    rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+    username = rows[0]['username']
+    image = rows[0]['image_id']
+
+    rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
+    
+    if not rows:
+        friend_num = 0
+    else:
+        friend_num = len(rows)
+
+    return render_template("index.html", username=username,\
+        image=image, friend_num=friend_num)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -46,19 +63,22 @@ def login():
     if request.method == "POST":
 
         # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
+        if request.form.get("username") == "":
+            flash("Must provide username")
+            return render_template("login.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            flash("must provide password")
+            return render_template("login.html")
 
         # Query database for username
-        rows = c.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            flash("invalid username and/or password")
+            return render_template("login.html")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -87,6 +107,7 @@ def register():
 
     # if its a post method (send the server the register data)
     if request.method == "POST":
+
         # checks if username is empty
         if request.form.get("username") == "":
             flash("Must provide username")
@@ -95,7 +116,7 @@ def register():
         # Checks if username already exists
         rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
         if len(rows) != 0:
-            flash(f"Sorry, that username is already taken")
+            flash("Sorry, that '{}' is already taken".formant(request.form.get("username")))
             return redirect("/register")
 
 

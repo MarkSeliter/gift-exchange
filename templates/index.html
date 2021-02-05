@@ -4,7 +4,38 @@
     Home
 {% endblock %}
 
+{% block index %}
+    active
+{% endblock %}
+
 {% block main %}
-    <h3>Index</h3><br>
-    <p>SUCCESS!</p>
+    <div class="row">
+
+    	<div class="col">
+            <img style="width: 80%;" src="/static/pp/{{ image }}.png">
+        </div>
+
+	    <div class="col">
+
+	        <table class="table table-hover">
+	        	<thead><tr><th>{{ username }}'s profile</th></tr></thead>
+	        	<tbody>
+	        		<tr>
+	        			<td>Friends ({{ friend_num }})</td>
+	        		</tr>
+	        		<tr>
+	        			<td>Games (x)</td>
+	        		</tr>
+	        		<tr>
+	        			<td>Messages (x)</td>
+	        		</tr>
+	        		<tr>
+	        			<td>Friend Requests (x)</td>
+	        		</tr>
+	        	</tbody>
+	        </table> 
+
+        </div>
+
+    </div>
 {% endblock %}

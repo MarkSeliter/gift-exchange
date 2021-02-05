@@ -4,13 +4,18 @@
     Log In
 {% endblock %}
 
+{% block login %}
+    active
+{% endblock %}
+
 {% block main %}
+    <h3>Log in</h3>
     <form action="/login" method="post">
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="username" type="text">
         </div>
         <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password">
+            <input class="form-control" name="password" placeholder="password" type="password">
         </div>
         <button class="btn btn-primary" type="submit">Log In</button>
     </form>
