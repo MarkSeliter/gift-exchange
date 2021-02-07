@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    {{ username }}'s profile
+    Friends
 {% endblock %}
 
 {% block friends %}
@@ -22,10 +22,12 @@
 
 	        	<tbody>
 	        		{% for friend in friends %}
-	        		<td><img style="max-width: 2rem;" src="/static/pp/{{ friend['image_id'] }}.png"></td>
-	        		<td>{{ friend['username'] }}</td>
-	        		<td><i class="fas fa-envelope"></i></td>
-	        		<td><i class="fas fa-user-minus"></i></td>
+	        		<tr>
+	        		    <td><img style="max-width: 2rem;" src="/static/pp/{{ friend['image_id'] }}.png"></td>
+	        		    <td>{{ friend['username'] }}</td>
+	        		    <td><i class="fas fa-envelope"></i></td>
+	        		    <td><i class="fas fa-user-minus"></i></td>
+	        	    </tr>
 	        		{% endfor %}
 	    	    </tbody>
 	        </table> 

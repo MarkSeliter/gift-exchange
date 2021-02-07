@@ -206,8 +206,10 @@ def register():
 def friends():
     """Lists all your friends and firend requests"""
 
+    # enables darkmode or disables darkmode
     rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
     darkmode = rows[0]['darkmode']
+    
     rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
 
     friends = []
@@ -222,5 +224,33 @@ def friends():
         friends.append(friend)
 
     friends.sort()
-    
+
     return render_template("friends.html",friends=friends, darkmode=darkmode)
+
+
+@app.route("/people", methods=["GET", "POST"])
+@login_required
+def people():
+    """lists all the users"""
+
+    # enables darkmode or disables darkmode
+    rows = db("SELECT * FROM users WHERE id = {}".format(session["user_id"]))
+    darkmode = rows[0]['darkmode']
+    
+    rows = db("SELECT * FROM users")
+
+    users = []
+
+    for row in rows:
+        look = db("SELECT * FROM users WHERE id = {}".format(row['id']))
+        
+        if not row['id'] == session["user_id"]:
+            user = {
+            'username': look[0]['username'],
+            'image_id': look[0]['image_id'],
+            }
+            users.append(user)
+
+    return render_template("people.html",users=users, darkmode=darkmode)
+
+

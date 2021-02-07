@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    People
+{% endblock %}
+
+{% block people %}
+    active
+{% endblock %}
+
+{% block main %}
+    <script type="text/javascript">
+    	
+
+
+
+    </script>
+
+    <div class="row">
+
+    	<div class="col">
+    	
+    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead>
+	        		<tr>
+	        			<th colspan="4">Users</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody>
+	        		{% for user in users %}
+	        		<tr>
+	        		    <td><img style="max-width: 2rem;" src="/static/pp/{{ user['image_id'] }}.png"></td>
+	        		    <td>{{ user['username'] }}</td>
+	        		    <td><i class="fas fa-envelope"></i></td>
+	        		    <td><i class="fas fa-user-minus"></i></td>
+	        		</tr>
+	        		{% endfor %}
+	    	    </tbody>
+	        </table> 
+
+        </div>
+
+    </div>
+{% endblock %}
