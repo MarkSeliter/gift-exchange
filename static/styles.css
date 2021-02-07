@@ -27,3 +27,16 @@ main img
     /* Constrain images on small screens */
     max-width: 100%;
 }
+
+.dark_background
+{
+    background-color: #2E2E2E;
+    color: #ffffff;
+}
+
+.cstmbtn
+{
+    margin-bottom: 1rem;
+    margin-right: 5px;
+    margin-left: 5px;
+}

@@ -33,13 +33,52 @@ Session(app)
 def index():
     """The main page (supposed to show only if logged in)"""
 
-    # request to see friend's profile
-    # if request.method == "POST":
+    if request.method == "POST":
+
+        # meaning the user wants to change the theme
+        # if the html was manipulated
+        if request.form.get("toggle_darkmode"):
+            darkmode = int(request.form.get("toggle_darkmode").strip())
+            if darkmode < 0 or darkmode > 1:
+                return redirect("/")
+
+            # now that everything checks out
+            db("UPDATE users SET darkmode = {} WHERE id ={}"\
+                .format(darkmode, session['user_id']))
+
+            return redirect("/")
+
+        # if it was a request to change pic
+        # also checks if its empty (manipulated)
+        if request.form.get("change_pp"):
+            rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+            image = rows[0]["image_id"]
+            change = int(request.form.get("change_pp").strip())
+            # left arrow
+            if change == -1 :
+                if image == 1:
+                    image = 22
+                else:
+                    image -= 1
+            # right arrow
+            elif change == 1:
+                if image == 22:
+                    image = 1
+                else:
+                    image += 1
+
+            db("UPDATE users SET image_id = {} WHERE id ={}"\
+                .format(image, session['user_id']))
+
+            return redirect("/")
+
+        return redirect("/")
 
     # request to see your own profile
     rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
     username = rows[0]['username']
     image = rows[0]['image_id']
+    darkmode = rows[0]['darkmode']
 
     rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
     
@@ -49,7 +88,7 @@ def index():
         friend_num = len(rows)
 
     return render_template("index.html", username=username,\
-        image=image, friend_num=friend_num)
+        image=image, friend_num=friend_num, darkmode=darkmode)
 
 
 @app.route("/login", methods=["GET", "POST"])

@@ -24,9 +24,9 @@
 
     </head>
 
-    <body>
+    <body class="{% if darkmode == 0 %} dark_background {% endif %}">
 
-        <nav class="navbar navbar-expand-md navbar-light bg-light border">
+        <nav class="navbar navbar-expand-md {% if darkmode == 0 %} navbar-dark bg-dark border-dark {% else %} navbar-light bg-light border {% endif %}">
             <a class="navbar-brand" href="/">Gift Exchange <img src="/static/favicon-32x32.png" alt="" class=".align-top .align-middle .align-bottom"></a>
             <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbar" data-toggle="collapse" type="button">
                 <span class="navbar-toggler-icon"></span>
@@ -36,8 +36,7 @@
                     <ul class="navbar-nav mr-auto mt-2">
                         <li class="nav-item"><a class="nav-link" href="/">Games</a></li>
                         <li class="nav-item"><a class="nav-link {% block index %}{% endblock %}" href="/">My profile</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/">My friends</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/">Messages</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/">Friends</a></li>
                     </ul>
                     <ul class="navbar-nav ml-auto mt-2">
                         <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
