@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ username }}'s profile
+{% endblock %}
+
+{% block friends %}
+    active
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+
+    	<div class="col">
+    	
+    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead>
+	        		<tr>
+	        			<th colspan="4">Friends</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody>
+	        		{% for friend in friends %}
+	        		<td><img style="max-width: 2rem;" src="/static/pp/{{ friend['image_id'] }}.png"></td>
+	        		<td>{{ friend['username'] }}</td>
+	        		<td><i class="fas fa-envelope"></i></td>
+	        		<td><i class="fas fa-user-minus"></i></td>
+	        		{% endfor %}
+	    	    </tbody>
+	        </table> 
+
+        </div>
+
+    </div>
+
+    <div class="row">
+
+    	<div class="col">
+    	
+    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead>
+	        		<tr>
+	        			<th colspan="4">Friend Requests</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody>
+	        		<td>(pp)</td>
+	        		<td>(username)</td>
+	        		<td><i class="fas fa-envelope"></i></td>
+	        		<td><i class="fas fa-user-minus"></i></td>
+	    	    </tbody>
+	        </table> 
+
+        </div>
+
+    </div>
+{% endblock %}

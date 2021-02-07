@@ -36,7 +36,13 @@ main img
 
 .cstmbtn
 {
-    margin-bottom: 1rem;
     margin-right: 5px;
     margin-left: 5px;
+}
+
+.pp_index 
+{
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    max-width: 260px;
 }

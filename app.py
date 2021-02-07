@@ -200,3 +200,27 @@ def register():
     # if its a get method (load the register page to register)
     return render_template("register.html")
 
+
+@app.route("/friends", methods=["GET", "POST"])
+@login_required
+def friends():
+    """Lists all your friends and firend requests"""
+
+    rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+    darkmode = rows[0]['darkmode']
+    rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
+
+    friends = []
+
+    for row in rows:
+        look = db("SELECT * FROM users WHERE id = '{}'".format(row['friend_id']))
+        
+        friend = {
+        'username': look[0]['username'],
+        'image_id': look[0]['image_id'],
+        }
+        friends.append(friend)
+
+    friends.sort()
+    
+    return render_template("friends.html",friends=friends, darkmode=darkmode)
