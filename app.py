@@ -1,9 +1,9 @@
-import sqlite3
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
+import random
 
 from helper import login_required, check_email, db
 
@@ -27,6 +27,10 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+
+# for i in range(1, 9, 1):
+#     db("INSERT INTO friends (user_id, friend_id) VALUES(1, {})".format(i))
+#     db("INSERT INTO friends (user_id, friend_id) VALUES({}, 1)".format(i))
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
@@ -148,7 +152,7 @@ def register():
     if request.method == "POST":
 
         # checks if username is empty
-        if request.form.get("username") == "":
+        if not request.form.get("username"):
             flash("Must provide username")
             return redirect("/register")
 
@@ -160,7 +164,7 @@ def register():
 
 
         # Checks if email is empty
-        if request.form.get("email") == "":
+        if not request.form.get("email"):
             flash("Must provide email")
             return redirect("/register")
 
@@ -170,12 +174,12 @@ def register():
             return redirect("/register")
 
         # checks if password is empty
-        if request.form.get("password1") == "":
+        if not request.form.get("password1"):
             flash("Must provide password")
             return redirect("/register")
 
         # checks if user repeated the password
-        if request.form.get("password2") == "":
+        if not request.form.get("password2"):
             flash("Must repeat password")
             return redirect("/register")
 
@@ -206,25 +210,50 @@ def register():
 def friends():
     """Lists all your friends and firend requests"""
 
+    # if its a request to change something
+    if request.method == "POST":
+
+        # checks if its a request to remove friend
+        if request.form.get("remove_friend_id"):
+
+            # looks for user's side friendship if it exists (to avoid manipulation)
+            rows = db("SELECT * FROM friends WHERE user_id = {} AND friend_id = {}"\
+                .format(session['user_id'], int(request.form.get("remove_friend_id"))))
+            
+            # if it does exist it will proceed to delete it
+            if len(rows) > 0:
+                rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
+                    .format(session['user_id'], int(request.form.get("remove_friend_id"))))
+                
+                rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
+                    .format(int(request.form.get("remove_friend_id")), session['user_id']))
+
+                flash("{} was removed from the friends list".format(request.form.get("remove_friend_u")))
+                return redirect("/friends")
+
+            else:
+                flash("Invalid request")
+                return redirect("/friends")
+
     # enables darkmode or disables darkmode
     rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
     darkmode = rows[0]['darkmode']
     
     rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
 
-    friends = []
+    friends_unsorted = []
 
     for row in rows:
         look = db("SELECT * FROM users WHERE id = '{}'".format(row['friend_id']))
         
         friend = {
+        'user_id': look[0]['id'],
         'username': look[0]['username'],
         'image_id': look[0]['image_id'],
         }
-        friends.append(friend)
+        friends_unsorted.append(friend)
 
-    friends.sort()
-
+    friends = sorted(friends_unsorted, key=lambda k: k['username']) 
     return render_template("friends.html",friends=friends, darkmode=darkmode)
 
 

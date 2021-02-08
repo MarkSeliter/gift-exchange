@@ -46,3 +46,17 @@ main img
     padding-bottom: 1rem;
     max-width: 260px;
 }
+
+.custom-btn-light
+{
+    background-color: #FFFFFF !important;
+    border-color: #FFFFFF !important;
+    border-radius: 5rem !important;
+}
+
+.custom-btn-dark
+{
+    background-color: #2E2E2E !important;
+    border-color: #2E2E2E !important;
+    border-radius: 5rem !important;
+}
