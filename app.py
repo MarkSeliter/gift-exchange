@@ -1,4 +1,4 @@
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -31,6 +31,7 @@ Session(app)
 # for i in range(1, 9, 1):
 #     db("INSERT INTO friends (user_id, friend_id) VALUES(1, {})".format(i))
 #     db("INSERT INTO friends (user_id, friend_id) VALUES({}, 1)".format(i))
+
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
@@ -157,7 +158,9 @@ def register():
             return redirect("/register")
 
         # Checks if username already exists
-        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
+        rows = db("SELECT * FROM users WHERE username = '{}'"\
+            .format(request.form.get("username")))
+
         if len(rows) != 0:
             flash("Sorry, that '{}' is already taken".formant(request.form.get("username")))
             return redirect("/register")
@@ -189,11 +192,10 @@ def register():
             return redirect("/register")
 
         # now that everything checks out that we can insert into the database
-        db("INSERT INTO users (username, hash, email) VALUES ('{}', '{}', '{}')".format(\
-            request.form.get("username"), \
-            generate_password_hash(request.form.get("password1")), \
-            request.form.get("email")\
-            ))
+        db("INSERT INTO users (username, hash, email) VALUES ('{}', '{}', '{}')"\
+            .format(request.form.get("username"),\
+            generate_password_hash(request.form.get("password1")),\
+            request.form.get("email")))
 
         # to improve user experience it logs in the user right after registering
         rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
@@ -213,38 +215,51 @@ def friends():
     # if its a request to change something
     if request.method == "POST":
 
-        # checks if its a request to remove friend
-        if request.form.get("remove_friend_id"):
+        # checks if its a request to remove friend and is a num
+        if request.form.get("remove_friend_id").isnumeric():
 
             # looks for user's side friendship if it exists (to avoid manipulation)
             rows = db("SELECT * FROM friends WHERE user_id = {} AND friend_id = {}"\
-                .format(session['user_id'], int(request.form.get("remove_friend_id"))))
+                .format(session['user_id'],\
+                    int(request.form.get("remove_friend_id"))))
             
             # if it does exist it will proceed to delete it
             if len(rows) > 0:
                 rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
-                    .format(session['user_id'], int(request.form.get("remove_friend_id"))))
+                    .format(session['user_id'],\
+                        int(request.form.get("remove_friend_id"))))
                 
                 rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
-                    .format(int(request.form.get("remove_friend_id")), session['user_id']))
+                    .format(int(request.form.get("remove_friend_id")),\
+                        session['user_id']))
 
-                flash("{} was removed from the friends list".format(request.form.get("remove_friend_u")))
+                flash("{} was removed from the friends list"\
+                    .format(request.form.get("remove_friend_u")))
                 return redirect("/friends")
 
+            # checks that the friend is actually in user's friends list
             else:
                 flash("Invalid request")
                 return redirect("/friends")
 
+        # none of the post request are relevant
+        else:
+            flash("Invalid request")
+            return redirect("/friends")
+
     # enables darkmode or disables darkmode
-    rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+    rows = db("SELECT * FROM users WHERE id = {}"\
+        .format(session['user_id']))
     darkmode = rows[0]['darkmode']
     
-    rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
+    rows = db("SELECT * FROM friends WHERE user_id = {}"\
+        .format(session['user_id']))
 
     friends_unsorted = []
 
     for row in rows:
-        look = db("SELECT * FROM users WHERE id = '{}'".format(row['friend_id']))
+        look = db("SELECT * FROM users WHERE id = '{}'"\
+            .format(row['friend_id']))
         
         friend = {
         'user_id': look[0]['id'],
@@ -254,32 +269,43 @@ def friends():
         friends_unsorted.append(friend)
 
     friends = sorted(friends_unsorted, key=lambda k: k['username']) 
-    return render_template("friends.html",friends=friends, darkmode=darkmode)
+    return render_template("friends.html",friends=friends,\
+        darkmode=darkmode)
 
 
-@app.route("/people", methods=["GET", "POST"])
+@app.route("/users", methods=["GET", "POST"])
 @login_required
-def people():
+def users():
     """lists all the users"""
 
     # enables darkmode or disables darkmode
-    rows = db("SELECT * FROM users WHERE id = {}".format(session["user_id"]))
+    rows = db("SELECT darkmode FROM users WHERE id = {}"\
+        .format(session["user_id"]))
     darkmode = rows[0]['darkmode']
-    
-    rows = db("SELECT * FROM users")
+
+    return render_template("people.html", darkmode=darkmode)
+
+
+@app.route("/search_users", methods=["GET"])
+@login_required
+def search_users():
+    """used to dynamically search users in /users"""
+
+    if not request.args.get("q"):
+        return ""
+
+    username = '%' + request.args.get("q") + '%'
+    rows = db("SELECT * FROM users WHERE username LIKE '{}' ORDER BY username"\
+        .format(username))
 
     users = []
-
     for row in rows:
-        look = db("SELECT * FROM users WHERE id = {}".format(row['id']))
-        
-        if not row['id'] == session["user_id"]:
+        if not row['id'] == session['user_id']:
             user = {
-            'username': look[0]['username'],
-            'image_id': look[0]['image_id'],
+            'username': row['username'],
+            'image_id': row['image_id']
             }
             users.append(user)
 
-    return render_template("people.html",users=users, darkmode=darkmode)
-
+    return jsonify(users)
 

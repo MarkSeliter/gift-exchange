@@ -16,39 +16,6 @@
     	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
 	        	<thead>
 	        		<tr>
-	        			<th colspan="4">Friends</th>
-	        		</tr>
-	        	</thead>
-
-	        	<tbody>
-	        		{% for friend in friends %}
-	        		<tr>
-	        		    <td><img style="max-width: 2rem;" src="/static/pp/{{ friend['image_id'] }}.png"></td>
-	        		    <td>{{ friend['username'] }}</td>
-	        		    <td><i class="fas fa-envelope"></i></td>
-	        		    <td>
-	        		    	<form action="/friends" method="post">
-	        		    		<input type="hidden" name="remove_friend_id" value="{{ friend['user_id'] }}">
-	        		    		<input type="hidden" name="remove_friend_u" value="{{ friend['username'] }}">
-	        		    		<button class="btn {% if darkmode == 0 %} custom-btn-dark btn-dark {% else %} custom-btn-light btn-light {% endif %} btn-sm"><i class="fas fa-user-minus"></i></button>
-	        		    	</form>
-	        		    </td>
-	        	    </tr>
-	        		{% endfor %}
-	    	    </tbody>
-	        </table> 
-
-        </div>
-
-    </div>
-
-    <div class="row">
-
-    	<div class="col">
-    	
-    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
-	        	<thead>
-	        		<tr>
 	        			<th colspan="4">Friend Requests</th>
 	        		</tr>
 	        	</thead>
@@ -63,6 +30,37 @@
 	        			</form>
 	        			<i class="fas fa-user-times"></i>
 	        		</td>
+	    	    </tbody>
+	        </table> 
+
+        </div>
+    </div>
+    <div class="row">
+
+    	<div class="col">
+    	
+    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead>
+	        		<tr>
+	        			<th colspan="4">Friends</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody>
+	        		{% for friend in friends %}
+	        		<tr>
+	        		    <td><img class="pp-sm" src="/static/pp/{{ friend['image_id'] }}.png"></td>
+	        		    <td>{{ friend['username'] }}</td>
+	        		    <td><i class="fas fa-envelope"></i></td>
+	        		    <td>
+	        		    	<form action="/friends" method="post">
+	        		    		<input type="hidden" name="remove_friend_id" value="{{ friend['user_id'] }}">
+	        		    		<input type="hidden" name="remove_friend_u" value="{{ friend['username'] }}">
+	        		    		<button type ="submit" class="btn {% if darkmode == 0 %} custom-btn-dark btn-dark {% else %} custom-btn-light btn-light {% endif %} btn-sm"><i class="fas fa-user-minus"></i></button>
+	        		    	</form>
+	        		    </td>
+	        	    </tr>
+	        		{% endfor %}
 	    	    </tbody>
 	        </table> 
 

@@ -60,3 +60,13 @@ main img
     border-color: #2E2E2E !important;
     border-radius: 5rem !important;
 }
+
+.srch-bar 
+{
+    margin: 1rem !important;
+}
+
+.pp-sm
+{
+    max-width: 2rem;
+}

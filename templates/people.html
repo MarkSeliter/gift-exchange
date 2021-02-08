@@ -1,45 +1,53 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    People
+    Users
 {% endblock %}
 
-{% block people %}
+{% block users %}
     active
 {% endblock %}
 
 {% block main %}
-    <script type="text/javascript">
-    	
-
-
-
-    </script>
-
     <div class="row">
 
     	<div class="col">
-    	
+    		<h3>Find Users</h3>
+            <input id="search_users" class="srch-bar form-control" autocomplete="off" autofocus placeholder="Username" type="search"/>
+
     	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
 	        	<thead>
 	        		<tr>
-	        			<th colspan="4">Users</th>
+	        			<th colspan="4">Friends</th>
 	        		</tr>
 	        	</thead>
 
-	        	<tbody>
-	        		{% for user in users %}
-	        		<tr>
-	        		    <td><img style="max-width: 2rem;" src="/static/pp/{{ user['image_id'] }}.png"></td>
-	        		    <td>{{ user['username'] }}</td>
-	        		    <td><i class="fas fa-envelope"></i></td>
-	        		    <td><i class="fas fa-user-minus"></i></td>
-	        		</tr>
-	        		{% endfor %}
-	    	    </tbody>
-	        </table> 
+	        	<tbody class="user"></tbody>
+	        </table>
 
         </div>
 
     </div>
+    <script>
+        let input = document.querySelector('#search_users');
+            input.addEventListener('keyup', function() {
+                $.get('/search_users?q=' + input.value, function(users) {
+                  let html = '';
+                  for (let user in users)
+                  {
+                      let username = users[user].username;
+                      let image_id = users[user].image_id;
+                      html += '<tr>';
+                      html += '<td><img class="pp-sm" src="/static/pp/';
+                      html += '' + image_id + '';
+                      html += '.png"></td>';
+                      html += '<td>' + username +'</td>';
+                      html += '<td><i class="fas fa-user-plus"></i></td>';
+                      html += '</tr>';
+                  }
+
+                  document.querySelector('.user').innerHTML = html;
+                });
+            });
+    </script>
 {% endblock %}
