@@ -80,16 +80,13 @@ def index():
 
         return redirect("/")
 
-    # gets the darkmode preference (on or off)
-    darkmode = session["dark_mode"]
-
     # Gets data to display in profile
     rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
     username = rows[0]['username']
     image = rows[0]['image_id']
     
     return render_template("index.html", username=username,\
-        image=image, darkmode=darkmode)
+        image=image, darkmode=session["dark_mode"])
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -258,9 +255,6 @@ def friends():
         # none of the post request are relevant
         else:
             return redirect("/friends")
-
-    # gets the user's darkmode preference (on or off)
-    darkmode = session["dark_mode"]
     
     rows = db(f"SELECT * FROM friends WHERE user_id = {session['user_id']}")
 
@@ -278,7 +272,7 @@ def friends():
 
     friends = sorted(friends_unsorted, key=lambda k: k['username']) 
     return render_template("friends.html",friends=friends,\
-        darkmode=darkmode)
+        darkmode=session["dark_mode"])
 
 
 @app.route("/users", methods=["GET", "POST"])
@@ -295,10 +289,7 @@ def users():
 
         return redirect("/users")
 
-    # gets the user's darkmode preference (on or off)
-    darkmode = session["dark_mode"]
-
-    return render_template("users.html", darkmode=darkmode)
+    return render_template("users.html", darkmode=session["dark_mode"])
 
 
 @app.route("/search_users")
@@ -339,10 +330,20 @@ def search_users():
 def user():
     """Load an html page with a specific user's info"""
 
+     # if its a request to change something
+    if request.method == "POST":
+
+        # user used toggle_dark_mode
+        if request.form.get('toggle_dark_mode'):
+            dark_mode_toggler()
+
     # if the html was exploited to be empty
     if not request.args.get("u"):
         flash("Invalid request")
         return redirect("/users")
+
+    referrer = request.headers.get("Referer")
+    print(referrer)
 
     # fetches data about user in question
     rows = db(f"SELECT * FROM users WHERE username = \
@@ -353,6 +354,10 @@ def user():
         flash("Invalid request")
         return redirect("/users")
 
-    return render_template("user.html")
+    username = rows[0]['username']
+    image_id = rows[0]['image_id']
+
+    return render_template("user.html", image_id=image_id, \
+        username=username, darkmode=session["dark_mode"])
 
 

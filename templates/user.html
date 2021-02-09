@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ username }}
+{% endblock %}
+
+{% block index %}
+    active
+{% endblock %}
+
+{% block current_path %}
+    /user?u={{ username }}
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+
+    	<div class="col">
+            <img class="pp_index" src="/static/pp/{{ image_id }}.png">
+        </div>
+
+	    <div class="col">
+
+	        <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead><tr><th>{{ username }}</th></tr></thead>
+	        	<tbody>
+	        		<tr>
+	        			<td>Change location</td>
+	        		</tr>
+	        		<tr>
+	        			<td>Change email</td>
+	        		</tr>
+	        		<tr>
+	        			<td>Change password <span class="glyphicon glyphicon-user"></span></td>
+	        		</tr>
+	        		<tr>
+	        			<td>
+
+	        			</td>
+	        		</tr>
+	        	</tbody>
+	        </table> 
+
+        </div>
+
+    </div>
+{% endblock %}
