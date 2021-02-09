@@ -11,42 +11,45 @@
 {% block main %}
     <div class="row">
 
-    	<div class="col">
-    		<h3>Find Users</h3>
+      	<div class="col">
+        		<h3>Find Users</h3>
             <input id="search_users" class="srch-bar form-control" autocomplete="off" autofocus placeholder="Username" type="search"/>
 
-    	    <table class="table {% if darkmode == 1 %} table-dark dark_background {% endif %} table-hover">
-	        	<thead>
-	        		<tr>
-	        			<th colspan="2">Users</th>
-	        		</tr>
-	        	</thead>
+      	    <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
+    	        	<thead>
+      	        		<tr>
+        	        	    <th colspan="2">Users</th>
+      	        		</tr>
+              	</thead>
 
-	        	<tbody class="user"></tbody>
-	        </table>
+    	        	<tbody class="user"></tbody>
+  	        </table>
 
         </div>
 
     </div>
-    <script>
+    <script type="text/javascript">
         let input = document.querySelector('#search_users');
             input.addEventListener('keyup', function() {
-                $.get('/search_users?q=' + input.value, function(users) {
-                  let html = '';
-                  for (let user in users)
-                  {
-                      let username = users[user].username;
-                      let image_id = users[user].image_id;
-                      html += '<tr>';
-                      html += '<td><img class="pp-sm users_pp"';
-                      html += 'src="/static/pp/';
-                      html += '' + image_id + '.png"></td>';
-                      html += '<td class = "users_username">' + username +'</td>';
-                      html += '</tr>';
-                  }
+            $.get('/search_users?q=' + input.value, function(users) {
+                let html = '';
+                for (let user in users)
+                {
+                    let username = users[user].username;
+                    let image_id = users[user].image_id;
+                    html += '<tr><td><img class="pp-sm"';
+                    html += 'src="/static/pp/' + image_id + '.png"></td><td>';
+                    html += '<a href="/user?u=' + username + '"';
+                    {% if darkmode > 0 %}
+                    html += 'class="link_users link_light">';
+                    {% else %}
+                    html += 'class="link_users link_dark">';
+                    {% endif %}
+                    html += '' + username + '</a></td></tr>';
+                }
 
-                  document.querySelector('.user').innerHTML = html;
-                });
+                document.querySelector('.user').innerHTML = html;
             });
+        });
     </script>
 {% endblock %}

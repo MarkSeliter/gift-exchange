@@ -157,11 +157,11 @@ def register():
             return redirect("/register")
 
         # Checks if username already exists
-        rows = db("SELECT * FROM users WHERE username = '{}'"\
-            .format(request.form.get("username")))
+        rows = db(f"SELECT * FROM users WHERE \
+            username = '{request.form.get('username')}'")
 
         if len(rows) != 0:
-            flash("Sorry, that '{}' is already taken".formant(request.form.get("username")))
+            flash(f"Sorry, '{request.form.get('username')}' is already taken")
             return redirect("/register")
 
 
@@ -191,11 +191,10 @@ def register():
             return redirect("/register")
 
         # now that everything checks out that we can insert into the database
-        db("INSERT INTO users (username, hash, email, image_id) VALUES ('{}', '{}', '{}', {})"\
-            .format(request.form.get("username"),\
-            generate_password_hash(request.form.get("password1")),\
-            request.form.get("email"),\
-            randint(1, 22)))
+        db(f"INSERT INTO users (username, hash, email, image_id) \
+            VALUES ('{request.form.get('username')}', \
+            '{generate_password_hash(request.form.get('password1'))}', \
+            '{request.form.get('email')}', {randint(1, 22)})")
 
         # to improve user experience it logs in the user right after registering
         rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
@@ -231,22 +230,23 @@ def friends():
             if request.form.get("remove_friend_id").isnumeric():
 
                 # looks for user's side friendship if it exists (to avoid manipulation)
-                rows = db("SELECT * FROM friends WHERE user_id = {} AND friend_id = {}"\
-                    .format(session['user_id'],\
-                        int(request.form.get("remove_friend_id"))))
+                rows = db(f"SELECT * FROM friends WHERE \
+                    user_id = {session['user_id']} \
+                    AND friend_id = {int(request.form.get('remove_friend_id'))}")
                 
                 # if it does exist it will proceed to delete it
                 if len(rows) > 0:
-                    rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
-                        .format(session['user_id'],\
-                            int(request.form.get("remove_friend_id"))))
+                    rows = db(f"DELETE FROM friends WHERE user_id = \
+                        {session['user_id']} AND friend_id = \
+                        {request.form.get('remove_friend_id')}")
                     
-                    rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
-                        .format(int(request.form.get("remove_friend_id")),\
-                            session['user_id']))
+                    rows = db(f"DELETE FROM friends WHERE user_id = \
+                        {int(request.form.get('remove_friend_id'))} \
+                        AND friend_id = {session['user_id']}")
 
-                    flash("{} was removed from the friends list"\
-                        .format(request.form.get("remove_friend_u")))
+                    flash(f"{request.form.get('remove_friend_u')} \
+                        was removed from the friends list")
+
                 else:
                     flash("Invalid request")
                     return redirect("/friends")
@@ -262,14 +262,12 @@ def friends():
     # gets the user's darkmode preference (on or off)
     darkmode = session["dark_mode"]
     
-    rows = db("SELECT * FROM friends WHERE user_id = {}"\
-        .format(session['user_id']))
+    rows = db(f"SELECT * FROM friends WHERE user_id = {session['user_id']}")
 
     friends_unsorted = []
 
     for row in rows:
-        look = db("SELECT * FROM users WHERE id = '{}'"\
-            .format(row['friend_id']))
+        look = db(f"SELECT * FROM users WHERE id = {row['friend_id']}")
         
         friend = {
         'user_id': look[0]['id'],
@@ -303,20 +301,29 @@ def users():
     return render_template("users.html", darkmode=darkmode)
 
 
-@app.route("/search_users", methods=["GET"])
+@app.route("/search_users")
 @login_required
 def search_users():
     """used to dynamically search users in /users"""
 
-    if not request.args.get("q"):
+    # if an empty search bar was requested
+    if not request.args.get('q'):
         return ""
 
-    username = request.args.get("q") + '%'
-    rows = db("SELECT * FROM users WHERE username LIKE '{}' ORDER BY username"\
-        .format(username))
+    # fetch  usernames like the one typed
+    rows = db(f"SELECT * FROM users WHERE username \
+        LIKE '{request.args.get('q')}%' ORDER BY username")
 
+    # checks if there are any users like the one typed
+    if len(rows) == 0:
+        return ""
+
+    # an empty list to be populated by data
     users = []
+
+    # if there are results it organaizes them in a list of dicts
     for row in rows:
+
         if not row['id'] == session['user_id']:
             user = {
             'username': row['username'],
@@ -325,4 +332,27 @@ def search_users():
             users.append(user)
 
     return jsonify(users)
+
+
+@app.route("/user")
+@login_required
+def user():
+    """Load an html page with a specific user's info"""
+
+    # if the html was exploited to be empty
+    if not request.args.get("u"):
+        flash("Invalid request")
+        return redirect("/users")
+
+    # fetches data about user in question
+    rows = db(f"SELECT * FROM users WHERE username = \
+        '{request.args.get('u')}'")
+
+    # true if the html was exploited
+    if len(rows) == 0:
+        flash("Invalid request")
+        return redirect("/users")
+
+    return render_template("user.html")
+
 

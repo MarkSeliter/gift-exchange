@@ -34,12 +34,6 @@ main img
     color: #ffffff;
 }
 
-.cstmbtn
-{
-    margin-right: 5px;
-    margin-left: 5px;
-}
-
 .pp_index 
 {
     padding-top: 1rem;
@@ -58,7 +52,39 @@ main img
     margin: 1rem !important;
 }
 
-td .pp-sm
+.pp-sm
 {
     max-width: 2rem;
+    float: right;
+}
+
+.link_users
+{
+    float: left;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link_users:hover
+{
+    text-decoration: none;
+}
+.link_light:hover
+{
+    color: #FFFFFF;
+}
+
+.link_light
+{
+    color: #e0e0e0;
+}
+
+.link_dark:hover
+{
+    color: #000000;
+}
+
+.link_dark
+{
+    color: #4c4c4c;
 }
