@@ -8,6 +8,10 @@
     active
 {% endblock %}
 
+{% block current_path %}
+    /
+{% endblock %}
+
 {% block main %}
     <div class="row">
 
@@ -15,11 +19,11 @@
     		<div class="btn-group">
     		    <form action="/" method="post">
     			    <input type="hidden" name="change_pp" value="-1">
-    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode == 0 %}light{% else %}dark{% endif %}"><---</button>
+    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}"><---</button>
     		    </form>
     		    <form action="/" method="post">
     			    <input type="hidden" name="change_pp" value="1">
-    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode == 0 %}light{% else %}dark{% endif %}">---></button>
+    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}">---></button>
     		    </form>
     		</div><br>
             <img class="pp_index" src="/static/pp/{{ image }}.png">
@@ -27,7 +31,7 @@
 
 	    <div class="col">
 
-	        <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+	        <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
 	        	<thead><tr><th>{{ username }}'s profile</th></tr></thead>
 	        	<tbody>
 	        		<tr>
@@ -41,20 +45,7 @@
 	        		</tr>
 	        		<tr>
 	        			<td>
-	        				<form action="/" method="post">
-	        					<input type="hidden"
-	        					{% if darkmode == 0 %}
-	        					value="1"
-	        					{% else %}
-	        					value="0"
-	        					{% endif %} 
-	        					name="toggle_darkmode">
-	        					{% if darkmode == 0 %}
-	        					<button type="submit" class="btn btn-outline-light">Dark mode <i class="fas fa-moon"></i></button>
-	        					{% else %}
-	        					<button type="submit" class="btn btn-outline-dark">Light mode <i class="fas fa-sun"></i></button>
-	        					{% endif %} 
-	        				</form>
+
 	        			</td>
 	        		</tr>
 	        	</tbody>

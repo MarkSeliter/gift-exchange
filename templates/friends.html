@@ -8,12 +8,16 @@
     active
 {% endblock %}
 
+{% block current_path %}
+    /friends
+{% endblock %}
+
 {% block main %}
     <div class="row">
 
     	<div class="col">
     	
-    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+    	    <table class="table {% if darkmode == 1 %} table-dark dark_background {% endif %} table-hover">
 	        	<thead>
 	        		<tr>
 	        			<th colspan="4">Friend Requests</th>
@@ -39,7 +43,7 @@
 
     	<div class="col">
     	
-    	    <table class="table {% if darkmode == 0 %} table-dark dark_background {% endif %} table-hover">
+    	    <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
 	        	<thead>
 	        		<tr>
 	        			<th colspan="4">Friends</th>
@@ -54,9 +58,18 @@
 	        		    <td><i class="fas fa-envelope"></i></td>
 	        		    <td>
 	        		    	<form action="/friends" method="post">
-	        		    		<input type="hidden" name="remove_friend_id" value="{{ friend['user_id'] }}">
-	        		    		<input type="hidden" name="remove_friend_u" value="{{ friend['username'] }}">
-	        		    		<button type ="submit" class="btn {% if darkmode == 0 %} custom-btn-dark btn-dark {% else %} custom-btn-light btn-light {% endif %} btn-sm"><i class="fas fa-user-minus"></i></button>
+	        		    		<input type="hidden" name="remove_friend_id" 
+	        		    		value="{{ friend['user_id'] }}">
+	        		    		<input type="hidden" name="remove_friend_u"
+	        		    		value="{{ friend['username'] }}">
+	        		    		<button type ="submit" class="btn custom-btn btn-sm
+	        		    		{% if darkmode > 0 %}
+		        		    		btn-dark
+	        		    		{% else %}
+		        		    		btn-light
+	        		    		{% endif %}">
+	        		    			<i class="fas fa-user-minus"></i>
+	        		    		</button>
 	        		    	</form>
 	        		    </td>
 	        	    </tr>

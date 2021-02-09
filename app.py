@@ -3,7 +3,7 @@ from flask_session import Session
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
-import random
+from random import randint
 
 from helper import login_required, check_email, db
 
@@ -27,10 +27,18 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-
-# for i in range(1, 9, 1):
+# for i in range(2, 10, 1):
 #     db("INSERT INTO friends (user_id, friend_id) VALUES(1, {})".format(i))
 #     db("INSERT INTO friends (user_id, friend_id) VALUES({}, 1)".format(i))
+
+
+def dark_mode_toggler():
+    """toggles darkmode for a logged in user"""
+
+    session["dark_mode"] = session["dark_mode"] * -1
+    dark_mode_new = session["dark_mode"]
+    db("UPDATE users SET dark_mode = {} WHERE id ={}"\
+                .format(dark_mode_new, session['user_id']))
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -38,23 +46,14 @@ Session(app)
 def index():
     """The main page (supposed to show only if logged in)"""
 
+    # user subbmited a form via post
     if request.method == "POST":
 
-        # meaning the user wants to change the theme
-        # if the html was manipulated
-        if request.form.get("toggle_darkmode"):
-            darkmode = int(request.form.get("toggle_darkmode").strip())
-            if darkmode < 0 or darkmode > 1:
-                return redirect("/")
-
-            # now that everything checks out
-            db("UPDATE users SET darkmode = {} WHERE id ={}"\
-                .format(darkmode, session['user_id']))
-
-            return redirect("/")
+        # user used toggle_dark_mode
+        if request.form.get('toggle_dark_mode'):
+            dark_mode_toggler()
 
         # if it was a request to change pic
-        # also checks if its empty (manipulated)
         if request.form.get("change_pp"):
             rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
             image = rows[0]["image_id"]
@@ -71,29 +70,26 @@ def index():
                     image = 1
                 else:
                     image += 1
+            # there was an exploit
+            else:
+                flash("Invalid request")
+                return redirect("/")
 
             db("UPDATE users SET image_id = {} WHERE id ={}"\
                 .format(image, session['user_id']))
 
-            return redirect("/")
-
         return redirect("/")
 
-    # request to see your own profile
+    # gets the darkmode preference (on or off)
+    darkmode = session["dark_mode"]
+
+    # Gets data to display in profile
     rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
     username = rows[0]['username']
     image = rows[0]['image_id']
-    darkmode = rows[0]['darkmode']
-
-    rows = db("SELECT * FROM friends WHERE user_id = {}".format(session['user_id']))
     
-    if not rows:
-        friend_num = 0
-    else:
-        friend_num = len(rows)
-
     return render_template("index.html", username=username,\
-        image=image, friend_num=friend_num, darkmode=darkmode)
+        image=image, darkmode=darkmode)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -126,6 +122,9 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
+
+        # Remember if the users has darkmode on or off
+        session["dark_mode"] = rows[0]["dark_mode"]
 
         # Redirect user to home page
         return redirect("/")
@@ -192,14 +191,21 @@ def register():
             return redirect("/register")
 
         # now that everything checks out that we can insert into the database
-        db("INSERT INTO users (username, hash, email) VALUES ('{}', '{}', '{}')"\
+        db("INSERT INTO users (username, hash, email, image_id) VALUES ('{}', '{}', '{}', {})"\
             .format(request.form.get("username"),\
             generate_password_hash(request.form.get("password1")),\
-            request.form.get("email")))
+            request.form.get("email"),\
+            randint(1, 22)))
 
         # to improve user experience it logs in the user right after registering
         rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
+        
+        # remember which user is logged in
         session["user_id"] = rows[0]["id"]
+
+        # remember which darkmode preference the user has
+        session["dark_mode"] = rows[0]["dark_mode"]
+        
         flash("You've registered successfully!")
         return redirect("/")
 
@@ -215,42 +221,46 @@ def friends():
     # if its a request to change something
     if request.method == "POST":
 
-        # checks if its a request to remove friend and is a num
-        if request.form.get("remove_friend_id").isnumeric():
+        # user used toggle_dark_mode
+        if request.form.get('toggle_dark_mode'):
+            dark_mode_toggler()
 
-            # looks for user's side friendship if it exists (to avoid manipulation)
-            rows = db("SELECT * FROM friends WHERE user_id = {} AND friend_id = {}"\
-                .format(session['user_id'],\
-                    int(request.form.get("remove_friend_id"))))
-            
-            # if it does exist it will proceed to delete it
-            if len(rows) > 0:
-                rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
+        # user requested to remove a friend
+        if request.form.get("remove_friend_id"):
+            # checks if its a request to remove friend and is a num
+            if request.form.get("remove_friend_id").isnumeric():
+
+                # looks for user's side friendship if it exists (to avoid manipulation)
+                rows = db("SELECT * FROM friends WHERE user_id = {} AND friend_id = {}"\
                     .format(session['user_id'],\
                         int(request.form.get("remove_friend_id"))))
                 
-                rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
-                    .format(int(request.form.get("remove_friend_id")),\
-                        session['user_id']))
+                # if it does exist it will proceed to delete it
+                if len(rows) > 0:
+                    rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
+                        .format(session['user_id'],\
+                            int(request.form.get("remove_friend_id"))))
+                    
+                    rows = db("DELETE FROM friends WHERE user_id = {} AND friend_id = {}"\
+                        .format(int(request.form.get("remove_friend_id")),\
+                            session['user_id']))
 
-                flash("{} was removed from the friends list"\
-                    .format(request.form.get("remove_friend_u")))
-                return redirect("/friends")
+                    flash("{} was removed from the friends list"\
+                        .format(request.form.get("remove_friend_u")))
+                else:
+                    flash("Invalid request")
+                    return redirect("/friends")
 
-            # checks that the friend is actually in user's friends list
             else:
                 flash("Invalid request")
                 return redirect("/friends")
 
         # none of the post request are relevant
         else:
-            flash("Invalid request")
             return redirect("/friends")
 
-    # enables darkmode or disables darkmode
-    rows = db("SELECT * FROM users WHERE id = {}"\
-        .format(session['user_id']))
-    darkmode = rows[0]['darkmode']
+    # gets the user's darkmode preference (on or off)
+    darkmode = session["dark_mode"]
     
     rows = db("SELECT * FROM friends WHERE user_id = {}"\
         .format(session['user_id']))
@@ -278,12 +288,19 @@ def friends():
 def users():
     """lists all the users"""
 
-    # enables darkmode or disables darkmode
-    rows = db("SELECT darkmode FROM users WHERE id = {}"\
-        .format(session["user_id"]))
-    darkmode = rows[0]['darkmode']
+    # users filled in/used a form in a post method
+    if request.method == "POST":
 
-    return render_template("people.html", darkmode=darkmode)
+        # user used toggle_dark_mode
+        if request.form.get('toggle_dark_mode'):
+            dark_mode_toggler()
+
+        return redirect("/users")
+
+    # gets the user's darkmode preference (on or off)
+    darkmode = session["dark_mode"]
+
+    return render_template("users.html", darkmode=darkmode)
 
 
 @app.route("/search_users", methods=["GET"])
@@ -294,7 +311,7 @@ def search_users():
     if not request.args.get("q"):
         return ""
 
-    username = '%' + request.args.get("q") + '%'
+    username = request.args.get("q") + '%'
     rows = db("SELECT * FROM users WHERE username LIKE '{}' ORDER BY username"\
         .format(username))
 

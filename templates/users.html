@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Users
+{% endblock %}
+
+{% block users %}
+    active
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+
+    	<div class="col">
+    		<h3>Find Users</h3>
+            <input id="search_users" class="srch-bar form-control" autocomplete="off" autofocus placeholder="Username" type="search"/>
+
+    	    <table class="table {% if darkmode == 1 %} table-dark dark_background {% endif %} table-hover">
+	        	<thead>
+	        		<tr>
+	        			<th colspan="2">Users</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody class="user"></tbody>
+	        </table>
+
+        </div>
+
+    </div>
+    <script>
+        let input = document.querySelector('#search_users');
+            input.addEventListener('keyup', function() {
+                $.get('/search_users?q=' + input.value, function(users) {
+                  let html = '';
+                  for (let user in users)
+                  {
+                      let username = users[user].username;
+                      let image_id = users[user].image_id;
+                      html += '<tr>';
+                      html += '<td><img class="pp-sm users_pp"';
+                      html += 'src="/static/pp/';
+                      html += '' + image_id + '.png"></td>';
+                      html += '<td class = "users_username">' + username +'</td>';
+                      html += '</tr>';
+                  }
+
+                  document.querySelector('.user').innerHTML = html;
+                });
+            });
+    </script>
+{% endblock %}
