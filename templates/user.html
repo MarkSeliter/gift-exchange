@@ -4,29 +4,54 @@
     {{ username }}
 {% endblock %}
 
-{% block index %}
+{% block users %}
     active
 {% endblock %}
 
 {% block current_path %}
-    /user?u={{ username }}
+    /user
+{% endblock %}
+
+{% block current_path_more %}
+	?u={{ username }}
 {% endblock %}
 
 {% block main %}
     <div class="row">
 
     	<div class="col">
-            <img class="pp_index" src="/static/pp/{{ image_id }}.png">
+            <img class="pp_profile" src="/static/pp/{{ image_id }}.png">
         </div>
 
 	    <div class="col">
 
-	        <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
+	        <table class="table table-borderless
+		        {% if darkmode > 0 %}
+			        table-dark dark_background 
+		        {% endif %} table-hover">
+
 	        	<thead><tr><th>{{ username }}</th></tr></thead>
+
 	        	<tbody>
+
 	        		<tr>
-	        			<td>Change location</td>
+	        			<td>
+	        				<form action="/user" method="post">
+	        		    		<input type="hidden" name="" 
+	        		    		value="">
+	        		    		<button type ="submit" class="btn custom-btn btn-sm
+	        		    		{% if darkmode > 0 %}
+		        		    		btn-dark
+	        		    		{% else %}
+		        		    		btn-light
+	        		    		{% endif %}">
+	        		    			<i class="fas fa-user-minus"></i>
+	        		    		</button>
+	        		    	</form>
+		        			Send friend request
+		        		</td>
 	        		</tr>
+
 	        		<tr>
 	        			<td>Change email</td>
 	        		</tr>
@@ -37,8 +62,10 @@
 	        			<td>
 
 	        			</td>
+
 	        		</tr>
 	        	</tbody>
+
 	        </table> 
 
         </div>

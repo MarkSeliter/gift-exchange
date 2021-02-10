@@ -12,6 +12,10 @@
     /
 {% endblock %}
 
+{% block current_path_more %}
+    ?
+{% endblock %}
+
 {% block main %}
     <div class="row">
 
@@ -26,7 +30,7 @@
     			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}">---></button>
     		    </form>
     		</div><br>
-            <img class="pp_index" src="/static/pp/{{ image }}.png">
+            <img class="pp_profile" src="/static/pp/{{ image }}.png">
         </div>
 
 	    <div class="col">

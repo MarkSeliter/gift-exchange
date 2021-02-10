@@ -220,29 +220,38 @@ def friends():
         # user used toggle_dark_mode
         if request.form.get('toggle_dark_mode'):
             dark_mode_toggler()
+            return redirect("/friends")
 
         # user requested to remove a friend
-        if request.form.get("remove_friend_id"):
+        if request.form.get("remove_friend"):
             # checks if its a request to remove friend and is a num
-            if request.form.get("remove_friend_id").isnumeric():
+            if request.form.get("remove_friend").isnumeric():
+
+                # putting the id into a variable to make it more readable
+                friend_id = int(request.form.get("remove_friend"))
 
                 # looks for user's side friendship if it exists (to avoid manipulation)
                 rows = db(f"SELECT * FROM friends WHERE \
                     user_id = {session['user_id']} \
-                    AND friend_id = {int(request.form.get('remove_friend_id'))}")
+                    AND friend_id = {friend_id}")
                 
                 # if it does exist it will proceed to delete it
                 if len(rows) > 0:
+
+                    f_u = db(f"SELECT username FROM users WHERE \
+                        id = '{friend_id}'")
+
                     rows = db(f"DELETE FROM friends WHERE user_id = \
                         {session['user_id']} AND friend_id = \
-                        {request.form.get('remove_friend_id')}")
+                        {friend_id}")
                     
-                    rows = db(f"DELETE FROM friends WHERE user_id = \
-                        {int(request.form.get('remove_friend_id'))} \
+                    rows = db(f"DELETE FROM friends WHERE \
+                        user_id = {friend_id} \
                         AND friend_id = {session['user_id']}")
 
-                    flash(f"{request.form.get('remove_friend_u')} \
+                    flash(f"{f_u[0]['username']} \
                         was removed from the friends list")
+                    return redirect("/friends")
 
                 else:
                     flash("Invalid request")
@@ -325,7 +334,7 @@ def search_users():
     return jsonify(users)
 
 
-@app.route("/user")
+@app.route("/user", methods = ["GET", "POST"])
 @login_required
 def user():
     """Load an html page with a specific user's info"""
@@ -335,15 +344,18 @@ def user():
 
         # user used toggle_dark_mode
         if request.form.get('toggle_dark_mode'):
+
             dark_mode_toggler()
+
+            username = str(request.form.get('toggle_dark_mode')).strip()
+
+            print(username)
+            return redirect("/user" + username)
 
     # if the html was exploited to be empty
     if not request.args.get("u"):
         flash("Invalid request")
         return redirect("/users")
-
-    referrer = request.headers.get("Referer")
-    print(referrer)
 
     # fetches data about user in question
     rows = db(f"SELECT * FROM users WHERE username = \
