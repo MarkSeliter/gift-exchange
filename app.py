@@ -56,37 +56,37 @@ def index():
         # if it was a request to change pic
         if request.form.get("change_pp"):
             rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
-            image = rows[0]["image_id"]
+            image_id = rows[0]["image_id"]
             change = int(request.form.get("change_pp").strip())
             # left arrow
             if change == -1 :
-                if image == 1:
-                    image = 22
+                if image_id == 1:
+                    image_id = 22
                 else:
-                    image -= 1
+                    image_id -= 1
             # right arrow
             elif change == 1:
-                if image == 22:
-                    image = 1
+                if image_id == 22:
+                    image_id = 1
                 else:
-                    image += 1
+                    image_id += 1
             # there was an exploit
             else:
                 flash("Invalid request")
                 return redirect("/")
 
-            db("UPDATE users SET image_id = {} WHERE id ={}"\
-                .format(image, session['user_id']))
+            db(f"UPDATE users SET image_id = {image_id} \
+                WHERE id ={session['user_id']}")
 
         return redirect("/")
 
     # Gets data to display in profile
-    rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+    rows = db(f"SELECT * FROM users WHERE id = {session['user_id']}")
     username = rows[0]['username']
-    image = rows[0]['image_id']
+    image_id = rows[0]['image_id']
     
     return render_template("index.html", username=username,\
-        image=image, darkmode=session["dark_mode"])
+        image=image_id, darkmode=session["dark_mode"])
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -225,49 +225,46 @@ def friends():
         # user requested to remove a friend
         if request.form.get("remove_friend"):
             # checks if its a request to remove friend and is a num
-            if request.form.get("remove_friend").isnumeric():
-
-                # putting the id into a variable to make it more readable
-                friend_id = int(request.form.get("remove_friend"))
-
-                # looks for user's side friendship if it exists (to avoid manipulation)
-                rows = db(f"SELECT * FROM friends WHERE \
-                    user_id = {session['user_id']} \
-                    AND friend_id = {friend_id}")
-                
-                # if it does exist it will proceed to delete it
-                if len(rows) > 0:
-
-                    f_u = db(f"SELECT username FROM users WHERE \
-                        id = '{friend_id}'")
-
-                    rows = db(f"DELETE FROM friends WHERE user_id = \
-                        {session['user_id']} AND friend_id = \
-                        {friend_id}")
-                    
-                    rows = db(f"DELETE FROM friends WHERE \
-                        user_id = {friend_id} \
-                        AND friend_id = {session['user_id']}")
-
-                    flash(f"{f_u[0]['username']} \
-                        was removed from the friends list")
-                    return redirect("/friends")
-
-                else:
-                    flash("Invalid request")
-                    return redirect("/friends")
-
-            else:
+            if not request.form.get("remove_friend").isnumeric():
                 flash("Invalid request")
                 return redirect("/friends")
+
+            # putting the id into a variable to make it more readable
+            friend_id = int(request.form.get("remove_friend"))
+
+            # looks for user's side friendship if it exists (to avoid manipulation)
+            rows = db(f"SELECT * FROM friends WHERE \
+                user_id = {session['user_id']} \
+                AND friend_id = {friend_id}")
+            
+            # if it doesnt exist in the friend table it exits
+            if len(rows) == 0:
+                flash("Invalid request")
+                return redirect("/friends")
+
+            # now that the request was validated it proceeds to delete
+            f_u = db(f"SELECT username FROM users WHERE \
+                id = '{friend_id}'")
+
+            rows = db(f"DELETE FROM friends WHERE user_id = \
+                {session['user_id']} AND friend_id = \
+                {friend_id}")
+            
+            rows = db(f"DELETE FROM friends WHERE \
+                user_id = {friend_id} \
+                AND friend_id = {session['user_id']}")
+
+            flash(f"{f_u[0]['username']} \
+                was removed from the friends list")
+            return redirect("/friends")
 
         # none of the post request are relevant
         else:
             return redirect("/friends")
     
-    rows = db(f"SELECT * FROM friends WHERE user_id = {session['user_id']}")
-
+    #  makes a list of dicts for friends table
     friends_unsorted = []
+    rows = db(f"SELECT * FROM friends WHERE user_id = {session['user_id']}")
 
     for row in rows:
         look = db(f"SELECT * FROM users WHERE id = {row['friend_id']}")
@@ -279,9 +276,26 @@ def friends():
         }
         friends_unsorted.append(friend)
 
-    friends = sorted(friends_unsorted, key=lambda k: k['username']) 
+    # make a list of dicts for friend requests
+    friend_req_unsorted = []
+    rows = db(f"SELECT * FROM friend_req WHERE \
+        reciever_id = {session['user_id']}")
+
+    for row in rows:
+        look = db(f"SELECT * FROM users WHERE id = {row['sender_id']}")
+        
+        req = {
+        'user_id': look[0]['id'],
+        'username': look[0]['username'],
+        'image_id': look[0]['image_id'],
+        }
+        friend_req_unsorted.append(req)
+
+    friends = sorted(friends_unsorted, key=lambda k: k['username'])
+    friend_req = sorted(friend_req_unsorted, key=lambda k: k['username'])
+
     return render_template("friends.html",friends=friends,\
-        darkmode=session["dark_mode"])
+        friend_req=friend_req ,darkmode=session["dark_mode"])
 
 
 @app.route("/users", methods=["GET", "POST"])
@@ -331,67 +345,5 @@ def search_users():
             }
             users.append(user)
 
-    return jsonify(users)
-
-
-@app.route("/user", methods = ["GET", "POST"])
-@login_required
-def user():
-    """Load an html page with a specific user's info"""
-
-     # if its a request to change something
-    if request.method == "POST":
-
-        # user used toggle_dark_mode
-        if request.form.get('toggle_dark_mode'):
-            dark_mode_toggler()
-
-            # put the request into a string
-            username = str(request.form.get('toggle_dark_mode')).strip()
-            return redirect("/user?u=" + username)
-
-        elif request.form.get('add_friend'):
-
-            # put the request into a string
-            username = str(request.form.get('add_friend')).strip()
-
-            # get the id of the user to send FR to
-            reciever = db(f"SELECT id FROM users WHERE \
-                username = '{username}'")
-
-            # add to the FR table
-            db(f"INSERT INTO friend_req (sender_id, reciever_id) \
-                VALUES ('{session['user_id']}', \
-                {int(reciever[0]['id'])})")
-
-            flash("Friend request has been sent")
-            return redirect("/user?u=" + username)
-
-        # none of the post requests were valid
-        else:
-            flash("Invalid request")
-            return redirect("/users")
-
-    # it was a get request
-
-    # if the html was exploited to be empty
-    if not request.args.get("u"):
-        flash("Invalid request")
-        return redirect("/users")
-
-    # fetches data about user in question
-    rows = db(f"SELECT * FROM users WHERE username = \
-        '{request.args.get('u')}'")
-
-    # true if the html was exploited
-    if len(rows) == 0:
-        flash("Invalid request")
-        return redirect("/users")
-
-    username = rows[0]['username']
-    image_id = rows[0]['image_id']
-
-    return render_template("user.html", image_id=image_id, \
-        username=username, darkmode=session["dark_mode"])
-
-
+    return render_template("user.html", users=users, \
+        darkmode=session["dark_mode"])

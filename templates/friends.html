@@ -12,41 +12,37 @@
     /friends
 {% endblock %}
 
-{% block current_path_more %}
-	?
-{% endblock %}
-
 {% block main %}
     <div class="row">
 
 	    <div class="col">
-
-	    	<div class="col">
 	    	
-	    	    <table class="table table-borderless {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
+    	    <table class="table table-borderless table-hover
+    	    {% if darkmode > 0 %}
+	    	    table-dark dark_background
+    	    {% endif %}">
 
-		        	<thead>
+	        	<thead>
+	        		<tr>
+	        			<th colspan="4">Friends</th>
+	        		</tr>
+	        	</thead>
+
+	        	<tbody>
+	        		{% if not friends %}
 		        		<tr>
-		        			<th colspan="4">Friends</th>
-		        		</tr>
-		        	</thead>
-
-		        	<tbody>
-		        		{% if not friends %}
-			        		<tr>
-			        			<td>
-					        		Try reaching out to someone in 
-					        		<a class= "" href="/users">
-						        		<i class="fas fa-users"></i> Users
-						        	</a> :)
-				        		<td>
-			        		<tr>
-		        		{% endif %}
-		        		{% for friend in friends %}
+		        			<td>
+				        		Try reaching out to someone in 
+				        		<a class= "" href="/users">
+					        		<i class="fas fa-users"></i> Users
+					        	</a> :)
+			        		<td>
+		        		<tr>
+	        		{% endif %}
+	        		{% for friend in friends %}
 		        		<tr>
 		        		    <td><img class="pp-sm" src="/static/pp/{{ friend['image_id'] }}.png"></td>
 		        		    <td>{{ friend['username'] }}</td>
-		        		    <td><i class="fas fa-envelope"></i></td>
 		        		    <td>
 		        		    	<form action="/friends" method="post">
 		        		    		<input type="hidden" name="remove_friend" 
@@ -62,21 +58,19 @@
 		        		    	</form>
 		        		    </td>
 		        	    </tr>
-		        		{% endfor %}
-		    	    </tbody>
+	        		{% endfor %}
+	    	    </tbody>
 
-		        </table> 
-
-	        </div>
+	        </table> 
 
 	    </div>
 
 	    <div class="col">
     	
-    	    <table class="table table-borderless
-    	    {% if darkmode == 1 %}
+    	    <table class="table table-borderless table-hover
+    	    {% if darkmode > 0 %}
 	    	    table-dark dark_background
-    	    {% endif %} table-hover">
+    	    {% endif %}">
 
 	        	<thead>
 	        		<tr>
@@ -85,18 +79,39 @@
 	        	</thead>
 
 	        	<tbody>
-	        		<td>(pp)</td>
-	        		<td>(username)</td>
-	        		<td><i class="fas fa-envelope"></i></td>
-	        		<td>
-	        			<form>
-	        				
-	        			</form>
-	        			<i class="fas fa-user-times"></i>
-	        		</td>
+	        		{% if not friend_req %}
+		        		<tr>
+		        			<td>
+		        				No friend requests.
+			        		<td>
+		        		<tr>
+	        		{% endif %}
+	        		{% for req in friend_req %}
+		        		<tr>
+		        		    <td>
+		        		    	<img class="pp-sm"
+		        		    	src="/static/pp/{{ req['image_id'] }}.png">
+		        		    </td>
+		        		    <td>{{ req['username'] }}</td>
+		        		    <td>
+		        		    	<form action="/friends" method="">
+		        		    		<input type="hidden" name="" 
+		        		    		value="{{ req['user_id'] }}">
+		        		    		<button type ="submit" class="btn custom-btn btn-sm
+		        		    		{% if darkmode > 0 %}
+			        		    		btn-dark
+		        		    		{% else %}
+			        		    		btn-light
+		        		    		{% endif %}">
+		        		    			<i class="fas fa-check-circle"></i>
+		        		    		</button>
+		        		    	</form>
+		        		    </td>
+		        	    </tr>
+	        		{% endfor %}
 	    	    </tbody>
 
-	        </table> 
+	        </table>
 
         </div>
 

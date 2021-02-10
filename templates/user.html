@@ -1,73 +1,18 @@
-{% extends "layout.html" %}
-
-{% block title %}
-    {{ username }}
-{% endblock %}
-
-{% block users %}
-    active
-{% endblock %}
-
-{% block current_path %}
-    /user
-{% endblock %}
-
-{% block current_path_more %}
-	{{ username }}
-{% endblock %}
-
-{% block main %}
-    <div class="row">
-
-    	<div class="col">
-            <img class="pp_profile" src="/static/pp/{{ image_id }}.png">
-        </div>
-
-	    <div class="col">
-
-	        <table class="table table-borderless
-		        {% if darkmode > 0 %}
-			        table-dark dark_background 
-		        {% endif %} table-hover">
-
-	        	<thead><tr><th>{{ username }}</th></tr></thead>
-
-	        	<tbody>
-
-	        		<tr>
-	        			<td>
-	        				<form action="/user" method="post">
-	        		    		<input type="hidden" name="add_friend" 
-	        		    		value="{{ username }}">
-	        		    		<button type ="submit" class="btn custom-btn btn-sm
-	        		    		{% if darkmode > 0 %}
-		        		    		btn-dark
-	        		    		{% else %}
-		        		    		btn-light
-	        		    		{% endif %}">
-	        		    			<i class="fas fa-user-plus"></i> Add friend
-	        		    		</button>
-	        		    	</form>
-		        		</td>
-	        		</tr>
-
-	        		<tr>
-	        			<td>Change email</td>
-	        		</tr>
-	        		<tr>
-	        			<td>Change password <span class="glyphicon glyphicon-user"></span></td>
-	        		</tr>
-	        		<tr>
-	        			<td>
-
-	        			</td>
-
-	        		</tr>
-	        	</tbody>
-
-	        </table> 
-
-        </div>
-
-    </div>
-{% endblock %}
+{% for user in users %}
+	<tr>
+	    <td><img class="pp-sm" src="/static/pp/{{ user['image_id'] }}.png"></td>
+	    <td>{{ user['username'] }}</td>
+	    <td>
+	    	<form disabled action="" method="">
+	    		<button type ="submit" class="btn custom-btn btn-sm
+	    		{% if darkmode > 0 %}
+		    		btn-dark
+	    		{% else %}
+		    		btn-light
+	    		{% endif %}">
+	    			<i style="float: left;"class="fas fa-user-minus"></i>
+	    		</button>
+	    	</form>
+	    </td>
+	</tr>
+{% endfor %}

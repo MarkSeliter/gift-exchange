@@ -8,52 +8,55 @@
     active
 {% endblock %}
 
-{% block current_path_more %}
-    ?
-{% endblock %}
-
 {% block main %}
     <div class="row">
 
       	<div class="col">
         		<h3>Find Users</h3>
-            <input id="search_users" class="srch-bar form-control" autocomplete="off" autofocus placeholder="Username" type="search"/>
+            <input id="users_sb" class="srch-bar form-control"
+            autocomplete="off" autofocus placeholder="Username" type="search"/>
 
-      	    <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
-    	        	<thead>
-      	        		<tr>
-        	        	    <th colspan="2">Users</th>
-      	        		</tr>
+      	    <table class="table table-responsive table-borderless table-hover
+            {% if darkmode > 0 %}
+                table-dark dark_background
+            {% endif %}">
+
+	        	<thead>
+  	        		<tr>
+    	        	    <th colspan="3">Users</th>
+  	        		</tr>
               	</thead>
 
-    	        	<tbody class="user"></tbody>
+    	        	<tbody id="search_body"></tbody>
   	        </table>
 
         </div>
 
     </div>
     <script type="text/javascript">
-        let input = document.querySelector('#search_users');
-            input.addEventListener('keyup', function() {
-            $.get('/search_users?q=' + input.value, function(users) {
-                let html = '';
-                for (let user in users)
-                {
-                    let username = users[user].username;
-                    let image_id = users[user].image_id;
-                    html += '<tr><td><img class="pp-sm"';
-                    html += 'src="/static/pp/' + image_id + '.png"></td><td>';
-                    html += '<a href="/user?u=' + username + '"';
-                    {% if darkmode > 0 %}
-                    html += 'class="link_users link_light">';
-                    {% else %}
-                    html += 'class="link_users link_dark">';
-                    {% endif %}
-                    html += '' + username + '</a></td></tr>';
-                }
 
-                document.querySelector('.user').innerHTML = html;
-            });
+        // select the searchbar
+        let input = document.querySelector('#users_sb');
+
+        // an event lsitener when theres a keyup
+        input.addEventListener('keyup', function() {
+
+            // an XMLHttpRequest
+            var ajax = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and put it in
+            // the tbody with the id of search_body
+            ajax.onreadystatechange = function() {
+                if(ajax.readyState == 4 && ajax.status == 200){
+                    $('#search_body').html(ajax.responseText);
+                }
+            }
+
+            // it does a get request with the arg of q = (input.value)
+            ajax.open('GET', '/search_users?q=' + input.value, true);
+
+            // once it gets the response it sends it
+            ajax.send();
         });
     </script>
 {% endblock %}

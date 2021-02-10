@@ -59,18 +59,13 @@
                                 <i class="fas fa-users"></i> Users 
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% block inbox %}{% endblock %}" href="/">
-                                <i class="fas fa-envelope"></i> Inbox 
-                            </a>
-                        </li>
                     </ul>
                     <ul class="navbar-nav ml-auto mt-2">
                         <li class="nav-item">
                             <form action="{% block current_path %}{% endblock %}" method="post">
                                 <input type="hidden"
                                 name="toggle_dark_mode"
-                                value = "{% block current_path_more %}{% endblock %}">
+                                value = "1">
 
                                 <button type="submit" class="nav-link custom-btn">
                                     {% if darkmode > 0 %}
