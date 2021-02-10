@@ -344,13 +344,35 @@ def user():
 
         # user used toggle_dark_mode
         if request.form.get('toggle_dark_mode'):
-
             dark_mode_toggler()
 
+            # put the request into a string
             username = str(request.form.get('toggle_dark_mode')).strip()
+            return redirect("/user?u=" + username)
 
-            print(username)
-            return redirect("/user" + username)
+        elif request.form.get('add_friend'):
+
+            # put the request into a string
+            username = str(request.form.get('add_friend')).strip()
+
+            # get the id of the user to send FR to
+            reciever = db(f"SELECT id FROM users WHERE \
+                username = '{username}'")
+
+            # add to the FR table
+            db(f"INSERT INTO friend_req (sender_id, reciever_id) \
+                VALUES ('{session['user_id']}', \
+                {int(reciever[0]['id'])})")
+
+            flash("Friend request has been sent")
+            return redirect("/user?u=" + username)
+
+        # none of the post requests were valid
+        else:
+            flash("Invalid request")
+            return redirect("/users")
+
+    # it was a get request
 
     # if the html was exploited to be empty
     if not request.args.get("u"):

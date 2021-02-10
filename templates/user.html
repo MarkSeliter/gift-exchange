@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block current_path_more %}
-	?u={{ username }}
+	{{ username }}
 {% endblock %}
 
 {% block main %}
@@ -37,18 +37,17 @@
 	        		<tr>
 	        			<td>
 	        				<form action="/user" method="post">
-	        		    		<input type="hidden" name="" 
-	        		    		value="">
+	        		    		<input type="hidden" name="add_friend" 
+	        		    		value="{{ username }}">
 	        		    		<button type ="submit" class="btn custom-btn btn-sm
 	        		    		{% if darkmode > 0 %}
 		        		    		btn-dark
 	        		    		{% else %}
 		        		    		btn-light
 	        		    		{% endif %}">
-	        		    			<i class="fas fa-user-minus"></i>
+	        		    			<i class="fas fa-user-plus"></i> Add friend
 	        		    		</button>
 	        		    	</form>
-		        			Send friend request
 		        		</td>
 	        		</tr>
 
