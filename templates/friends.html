@@ -13,11 +13,12 @@
 {% endblock %}
 
 {% block main %}
-    <div class="row">
+    <div class="row justify-content-center">
 
-	    <div class="col">
+	    <div class="col-auto">
 	    	
-    	    <table class="table table-borderless table-hover
+    	    <table class="table table-responsive table-borderless
+    	    table-hover
     	    {% if darkmode > 0 %}
 	    	    table-dark dark_background
     	    {% endif %}">
@@ -44,6 +45,7 @@
 		        		    <td><img class="pp-sm" src="/static/pp/{{ friend['image_id'] }}.png"></td>
 		        		    <td>{{ friend['username'] }}</td>
 		        		    <td>
+
 		        		    	<form action="/friends" method="post">
 		        		    		<input type="hidden" name="remove_friend" 
 		        		    		value="{{ friend['user_id'] }}">
@@ -56,6 +58,7 @@
 		        		    			<i class="fas fa-user-minus"></i>
 		        		    		</button>
 		        		    	</form>
+
 		        		    </td>
 		        	    </tr>
 	        		{% endfor %}
@@ -65,9 +68,10 @@
 
 	    </div>
 
-	    <div class="col">
+	    <div class="col-auto">
     	
-    	    <table class="table table-borderless table-hover
+    	    <table class="table table-responsive table-borderless
+    	    table-hover
     	    {% if darkmode > 0 %}
 	    	    table-dark dark_background
     	    {% endif %}">
@@ -89,13 +93,17 @@
 	        		{% for req in friend_req %}
 		        		<tr>
 		        		    <td>
+
 		        		    	<img class="pp-sm"
 		        		    	src="/static/pp/{{ req['image_id'] }}.png">
+
 		        		    </td>
 		        		    <td>{{ req['username'] }}</td>
 		        		    <td>
+
+		        		    	<!-- TODO -->
 		        		    	<form action="/friends" method="">
-		        		    		<input type="hidden" name="" 
+		        		    		<input type="hidden" name="accept_fr" 
 		        		    		value="{{ req['user_id'] }}">
 		        		    		<button type ="submit" class="btn custom-btn btn-sm
 		        		    		{% if darkmode > 0 %}
@@ -106,6 +114,26 @@
 		        		    			<i class="fas fa-check-circle"></i>
 		        		    		</button>
 		        		    	</form>
+		        		    	<!-- endTODO -->
+
+		        		    </td>
+		        		    <td>
+
+		        		    	<!-- TODO -->
+		        		    	<form action="/friends" method="post">
+		        		    		<input type="hidden" name="" 
+		        		    		value="{{ req['user_id'] }}">
+		        		    		<button type ="submit" class="btn custom-btn btn-sm
+		        		    		{% if darkmode > 0 %}
+			        		    		btn-dark
+		        		    		{% else %}
+			        		    		btn-light
+		        		    		{% endif %}">
+		        		    			<i class="fas fa-times-circle"></i>
+		        		    		</button>
+		        		    	</form>
+		        		    	<!-- endTODO -->
+
 		        		    </td>
 		        	    </tr>
 	        		{% endfor %}

@@ -55,7 +55,7 @@ def index():
 
         # if it was a request to change pic
         if request.form.get("change_pp"):
-            rows = db("SELECT * FROM users WHERE id = {}".format(session['user_id']))
+            rows = db(f"SELECT * FROM users WHERE id = {session['user_id']}")
             image_id = rows[0]["image_id"]
             change = int(request.form.get("change_pp").strip())
             # left arrow
@@ -110,10 +110,12 @@ def login():
             return render_template("login.html")
 
         # Query database for username
-        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
+        rows = db(f"SELECT * FROM users WHERE \
+            username = '{request.form.get('username')}'")
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if len(rows) != 1 or not \
+        check_password_hash(rows[0]["hash"], request.form.get("password")):
             flash("invalid username and/or password")
             return render_template("login.html")
 
@@ -158,7 +160,8 @@ def register():
             username = '{request.form.get('username')}'")
 
         if len(rows) != 0:
-            flash(f"Sorry, '{request.form.get('username')}' is already taken")
+            flash(f"Sorry, '{request.form.get('username')}' \
+                is already taken")
             return redirect("/register")
 
 
@@ -194,7 +197,8 @@ def register():
             '{request.form.get('email')}', {randint(1, 22)})")
 
         # to improve user experience it logs in the user right after registering
-        rows = db("SELECT * FROM users WHERE username = '{}'".format(request.form.get("username")))
+        rows = db(f"SELECT * FROM users \
+            WHERE username = '{request.form.get("username")}'")
         
         # remember which user is logged in
         session["user_id"] = rows[0]["id"]
@@ -258,8 +262,17 @@ def friends():
                 was removed from the friends list")
             return redirect("/friends")
 
+        # user requested to accept a friend request
+        if request.form.get("accept_fr"):
+
+            # TODO
+
+            flash("Invalid request")
+            return redirect("/friends")
+
         # none of the post request are relevant
         else:
+            flash("Invalid request")
             return redirect("/friends")
     
     #  makes a list of dicts for friends table
@@ -310,7 +323,43 @@ def users():
         if request.form.get('toggle_dark_mode'):
             dark_mode_toggler()
 
-        return redirect("/users")
+        # a request to send friend request
+        elif request.form.get('send_fr'):
+
+            # checks if the request contains a num
+            if not request.form.get("send_fr").isnumeric():
+                flash("Invalid request")
+                return redirect("/users")
+
+            # a variable that contains the id to make the code readable
+            user_id = int(request.form.get("send_fr"))
+
+            # checks if the user is already a friend
+            rows_f = db(f"SELECT * FROM friends \
+                WHERE user_id = {session['user_id']} \
+                AND friend_id = {user_id}")
+
+            # checks if the id exists in the database
+            rows_u = db(f"SELECT * FROM users WHERE id = {user_id}")
+
+            # preforming the checks
+            if len(rows_u) == 0 or len(rows_f) != 0:
+                flash("Invalid request")
+                return redirect("/users")
+
+            # now that the id is valid the app can proceed to add to the
+            # friend_req table
+            db(f"INSERT INTO friend_req (sender_id, reciever_id) \
+                VALUES ({session['user_id']}, {user_id})")
+
+            # now that it has been added we can notify the user and redirect
+            flash(f"Friend request has been sent to {rows_u[0]['username']}")
+            return redirect("/users")
+
+        # if none of the requests got called
+        else:
+            flash("Invalid request.")
+            return redirect("/users")
 
     return render_template("users.html", darkmode=session["dark_mode"])
 
@@ -338,11 +387,15 @@ def search_users():
     # if there are results it organaizes them in a list of dicts
     for row in rows:
 
+        # prevents from seeing yourself in users
         if not row['id'] == session['user_id']:
             user = {
+            'user_id': row['id'],
             'username': row['username'],
             'image_id': row['image_id']
             }
+
+            # add the user dict to the users list
             users.append(user)
 
     return render_template("user.html", users=users, \

@@ -3,16 +3,24 @@
 	    <td><img class="pp-sm" src="/static/pp/{{ user['image_id'] }}.png"></td>
 	    <td>{{ user['username'] }}</td>
 	    <td>
-	    	<form disabled action="" method="">
+
+	    	<!-- TODO -->
+	    	<form action="/users" method="post">
+
+	    		<input type="hidden" name="send_fr" value="{{ user['user_id'] }}">
+
 	    		<button type ="submit" class="btn custom-btn btn-sm
 	    		{% if darkmode > 0 %}
 		    		btn-dark
 	    		{% else %}
 		    		btn-light
 	    		{% endif %}">
-	    			<i style="float: left;"class="fas fa-user-minus"></i>
+	    			<i class="fas fa-user-plus"></i>
 	    		</button>
+
 	    	</form>
+	    	<!-- endTODO -->
+
 	    </td>
 	</tr>
 {% endfor %}

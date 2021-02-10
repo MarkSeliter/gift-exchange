@@ -9,12 +9,19 @@
 {% endblock %}
 
 {% block main %}
-    <div class="row">
 
-      	<div class="col">
-        		<h3>Find Users</h3>
+    <div class="row justify-content-center">
+        <div class="col-auto">
+
+            <h3>Find Users</h3>
             <input id="users_sb" class="srch-bar form-control"
             autocomplete="off" autofocus placeholder="Username" type="search"/>
+
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+      	<div class="col-auto">
 
       	    <table class="table table-responsive table-borderless table-hover
             {% if darkmode > 0 %}
@@ -28,17 +35,17 @@
               	</thead>
 
     	        	<tbody id="search_body"></tbody>
+
   	        </table>
 
         </div>
-
     </div>
     <script type="text/javascript">
 
         // select the searchbar
         let input = document.querySelector('#users_sb');
 
-        // an event lsitener when theres a keyup
+        // an event listener when theres a keyup
         input.addEventListener('keyup', function() {
 
             // an XMLHttpRequest
