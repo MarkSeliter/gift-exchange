@@ -198,7 +198,7 @@ def register():
 
         # to improve user experience it logs in the user right after registering
         rows = db(f"SELECT * FROM users \
-            WHERE username = '{request.form.get("username")}'")
+            WHERE username = '{request.form.get('username')}'")
         
         # remember which user is logged in
         session["user_id"] = rows[0]["id"]
@@ -228,7 +228,8 @@ def friends():
 
         # user requested to remove a friend
         if request.form.get("remove_friend"):
-            # checks if its a request to remove friend and is a num
+
+            # checks if the request is a num
             if not request.form.get("remove_friend").isnumeric():
                 flash("Invalid request")
                 return redirect("/friends")
@@ -265,10 +266,50 @@ def friends():
         # user requested to accept a friend request
         if request.form.get("accept_fr"):
 
-            # TODO
+            # checks if the request is a num
+            if not request.form.get('accept_fr').isnumeric():
+                flash("Invalid request")
+                return redirect("/friends")
+
+            # put the id into a var to make the code readable
+            friend_id = int(request.form.get('accept_fr'))
+
+            # checking if friend request exists
+            rows = db(f"SELECT * FROM friend_req WHERE \
+                sender_id = {friend_id} AND \
+                reciever_id = {session['user_id']}")
+
+            # if the request doesnt exist it returns
+            if len(rows) == 0:
+                flash("Invalid request")
+                return redirect("/friends")
+
+            # put info in the user's friend list
+            db(f"INSERT INTO friends (user_id, friend_id) \
+                VALUES ({session['user_id']}, {friend_id})")
+
+            # put info in the friend's friend list
+            db(f"INSERT INTO friends (user_id, friend_id) \
+                VALUES ({friend_id}, {session['user_id']})")
+
+            # deleting the request
+            db(f"DELETE FROM friend_req WHERE \
+                sender_id = {friend_id} AND \
+                reciever_id = {session['user_id']}")
+
+            flash("Friend request accepted!")
+            return redirect("/friends")
 
             flash("Invalid request")
             return redirect("/friends")
+
+        # user requested to deny a friend request
+        # if request.form.get("accept_fr"):
+
+        #     # TODO
+
+        #     flash("Invalid request")
+        #     return redirect("/friends")
 
         # none of the post request are relevant
         else:
