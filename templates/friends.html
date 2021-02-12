@@ -101,7 +101,7 @@
 		        		    <td>{{ req['username'] }}</td>
 		        		    <td>
 
-		        		    	<!-- almost -->
+		        		    	<!-- Accept a friend request -->
 		        		    	<form action="/friends" method="post">
 		        		    		<input type="hidden" name="accept_fr" 
 		        		    		value="{{ req['user_id'] }}">
@@ -114,14 +114,13 @@
 		        		    			<i class="fas fa-check-circle"></i>
 		        		    		</button>
 		        		    	</form>
-		        		    	<!-- endTODO -->
 
 		        		    </td>
 		        		    <td>
 
-		        		    	<!-- TODO -->
+		        		    	<!-- Deny a friend request -->
 		        		    	<form action="/friends" method="post">
-		        		    		<input type="hidden" name="" 
+		        		    		<input type="hidden" name="deny_fr" 
 		        		    		value="{{ req['user_id'] }}">
 		        		    		<button type ="submit" class="btn custom-btn btn-sm
 		        		    		{% if darkmode > 0 %}
@@ -132,7 +131,6 @@
 		        		    			<i class="fas fa-times-circle"></i>
 		        		    		</button>
 		        		    	</form>
-		        		    	<!-- endTODO -->
 
 		        		    </td>
 		        	    </tr>

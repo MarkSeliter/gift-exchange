@@ -227,7 +227,7 @@ def friends():
             return redirect("/friends")
 
         # user requested to remove a friend
-        if request.form.get("remove_friend"):
+        elif request.form.get("remove_friend"):
 
             # checks if the request is a num
             if not request.form.get("remove_friend").isnumeric():
@@ -264,7 +264,7 @@ def friends():
             return redirect("/friends")
 
         # user requested to accept a friend request
-        if request.form.get("accept_fr"):
+        elif request.form.get("accept_fr"):
 
             # checks if the request is a num
             if not request.form.get('accept_fr').isnumeric():
@@ -280,36 +280,56 @@ def friends():
                 reciever_id = {session['user_id']}")
 
             # if the request doesnt exist it returns
-            if len(rows) == 0:
-                flash("Invalid request")
+            if len(rows) != 0:
+
+                # put info in the user's friend list
+                db(f"INSERT INTO friends (user_id, friend_id) \
+                    VALUES ({session['user_id']}, {friend_id})")
+
+                # put info in the friend's friend list
+                db(f"INSERT INTO friends (user_id, friend_id) \
+                    VALUES ({friend_id}, {session['user_id']})")
+
+                # deleting the request
+                db(f"DELETE FROM friend_req WHERE \
+                    sender_id = {friend_id} AND \
+                    reciever_id = {session['user_id']}")
+
+                flash("Friend request accepted!")
                 return redirect("/friends")
-
-            # put info in the user's friend list
-            db(f"INSERT INTO friends (user_id, friend_id) \
-                VALUES ({session['user_id']}, {friend_id})")
-
-            # put info in the friend's friend list
-            db(f"INSERT INTO friends (user_id, friend_id) \
-                VALUES ({friend_id}, {session['user_id']})")
-
-            # deleting the request
-            db(f"DELETE FROM friend_req WHERE \
-                sender_id = {friend_id} AND \
-                reciever_id = {session['user_id']}")
-
-            flash("Friend request accepted!")
-            return redirect("/friends")
 
             flash("Invalid request")
             return redirect("/friends")
 
         # user requested to deny a friend request
-        # if request.form.get("accept_fr"):
+        elif request.form.get("deny_fr"):
 
-        #     # TODO
+            # checks if the request is a num
+            if not request.form.get('deny_fr').isnumeric():
+                flash("Invalid request")
+                return redirect("/friends")
 
-        #     flash("Invalid request")
-        #     return redirect("/friends")
+            # put the id into a var to make the code readable
+            friend_id = int(request.form.get('deny_fr'))
+
+            # checking if friend request exists
+            rows = db(f"SELECT * FROM friend_req WHERE \
+                sender_id = {friend_id} AND \
+                reciever_id = {session['user_id']}")
+
+            # if the request doesnt exist it returns
+            if len(rows) != 0:
+
+                # deleting the request
+                db(f"DELETE FROM friend_req WHERE \
+                    sender_id = {friend_id} AND \
+                    reciever_id = {session['user_id']}")
+
+                flash("Friend request denied!")
+                return redirect("/friends")
+
+            flash("Invalid request")
+            return redirect("/friends")
 
         # none of the post request are relevant
         else:
@@ -373,25 +393,46 @@ def users():
                 return redirect("/users")
 
             # a variable that contains the id to make the code readable
-            user_id = int(request.form.get("send_fr"))
+            friend_id = int(request.form.get("send_fr"))
 
             # checks if the user is already a friend
             rows_f = db(f"SELECT * FROM friends \
                 WHERE user_id = {session['user_id']} \
-                AND friend_id = {user_id}")
+                AND friend_id = {friend_id}")
 
             # checks if the id exists in the database
-            rows_u = db(f"SELECT * FROM users WHERE id = {user_id}")
+            rows_u = db(f"SELECT * FROM users WHERE id = {friend_id}")
 
             # preforming the checks
             if len(rows_u) == 0 or len(rows_f) != 0:
                 flash("Invalid request")
                 return redirect("/users")
 
+            # Checks if the friend already sent a friend request
+            rows = db(f"SELECT * FROM friend_req WHERE \
+                reciever_id = {session['user_id']} AND \
+                sender_id = {friend_id}")
+
+            # if the user already has a friend request from the designated
+            # user, it proceeds to make them friends
+            if rows != 0:
+                db(f"INSERT INTO friends (user_id, friend_id) \
+                    VALUES ({session['user_id']}, {friend_id})")
+
+                db(f"INSERT INTO friends (user_id, friend_id) \
+                    VALUES ({session['user_id']}, {friend_id})")
+
+                db(f"DELETE FROM friend_req WHERE \
+                reciever_id = {session['user_id']} AND \
+                sender_id = {friend_id}")
+
+                flash("Friend request accepted!")
+                return redirect("/users")
+
             # now that the id is valid the app can proceed to add to the
             # friend_req table
             db(f"INSERT INTO friend_req (sender_id, reciever_id) \
-                VALUES ({session['user_id']}, {user_id})")
+                VALUES ({session['user_id']}, {friend_id})")
 
             # now that it has been added we can notify the user and redirect
             flash(f"Friend request has been sent to {rows_u[0]['username']}")
