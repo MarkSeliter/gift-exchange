@@ -38,8 +38,8 @@
             <div class="collapse navbar-collapse" id="navbar">
                 {% if session.user_id %}
                     <ul class="navbar-nav mr-auto mt-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">
+                        <li class="nav-item {% block game %}{% endblock %}">
+                            <a class="nav-link" href="/games">
                                 <i class="fas fa-dice"></i> Games 
                             </a>
                         </li>
@@ -62,10 +62,10 @@
                     </ul>
                     <ul class="navbar-nav ml-auto mt-2">
                         <li class="nav-item">
-                            <form action="{% block current_path %}{% endblock %}" method="post">
+                            <form action="/dark_mode" method="post">
                                 <input type="hidden"
-                                name="toggle_dark_mode"
-                                value = "1">
+                                name="cur_path"
+                                value = "{% block current_path %}{% endblock %}">
 
                                 <button type="submit" class="nav-link custom-btn">
                                     {% if darkmode > 0 %}

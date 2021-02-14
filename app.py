@@ -31,14 +31,19 @@ Session(app)
 #     db("INSERT INTO friends (user_id, friend_id) VALUES(1, {})".format(i))
 #     db("INSERT INTO friends (user_id, friend_id) VALUES({}, 1)".format(i))
 
-
-def dark_mode_toggler():
+@app.route("/dark_mode", methods=["POST"])
+@login_required
+def dark_mode():
     """toggles darkmode for a logged in user"""
 
     session["dark_mode"] = session["dark_mode"] * -1
     dark_mode_new = session["dark_mode"]
-    db("UPDATE users SET dark_mode = {} WHERE id ={}"\
-                .format(dark_mode_new, session['user_id']))
+    db(f"UPDATE users SET dark_mode = {dark_mode_new} \
+        WHERE id ={session['user_id']}")
+
+    path = str(request.form.get('cur_path')).strip()
+
+    return redirect(path)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -48,10 +53,6 @@ def index():
 
     # user subbmited a form via post
     if request.method == "POST":
-
-        # user used toggle_dark_mode
-        if request.form.get('toggle_dark_mode'):
-            dark_mode_toggler()
 
         # if it was a request to change pic
         if request.form.get("change_pp"):
@@ -221,13 +222,8 @@ def friends():
     # if its a request to change something
     if request.method == "POST":
 
-        # user used toggle_dark_mode
-        if request.form.get('toggle_dark_mode'):
-            dark_mode_toggler()
-            return redirect("/friends")
-
         # user requested to remove a friend
-        elif request.form.get("remove_friend"):
+        if request.form.get("remove_friend"):
 
             # checks if the request is a num
             if not request.form.get("remove_friend").isnumeric():
@@ -380,12 +376,8 @@ def users():
     # users filled in/used a form in a post method
     if request.method == "POST":
 
-        # user used toggle_dark_mode
-        if request.form.get('toggle_dark_mode'):
-            dark_mode_toggler()
-
         # a request to send friend request
-        elif request.form.get('send_fr'):
+        if request.form.get('send_fr'):
 
             # checks if the request contains a num
             if not request.form.get("send_fr").isnumeric():
@@ -415,12 +407,12 @@ def users():
 
             # if the user already has a friend request from the designated
             # user, it proceeds to make them friends
-            if rows != 0:
+            if len(rows) != 0:
                 db(f"INSERT INTO friends (user_id, friend_id) \
                     VALUES ({session['user_id']}, {friend_id})")
 
                 db(f"INSERT INTO friends (user_id, friend_id) \
-                    VALUES ({session['user_id']}, {friend_id})")
+                    VALUES ({friend_id}, {session['user_id']})")
 
                 db(f"DELETE FROM friend_req WHERE \
                 reciever_id = {session['user_id']} AND \
@@ -429,10 +421,10 @@ def users():
                 flash("Friend request accepted!")
                 return redirect("/users")
 
-            # now that the id is valid the app can proceed to add to the
-            # friend_req table
-            db(f"INSERT INTO friend_req (sender_id, reciever_id) \
-                VALUES ({session['user_id']}, {friend_id})")
+            # if the user is the first send the friend request
+            else:
+                db(f"INSERT INTO friend_req (sender_id, reciever_id) \
+                    VALUES ({session['user_id']}, {friend_id})")
 
             # now that it has been added we can notify the user and redirect
             flash(f"Friend request has been sent to {rows_u[0]['username']}")
@@ -482,3 +474,24 @@ def search_users():
 
     return render_template("user.html", users=users, \
         darkmode=session["dark_mode"])
+
+
+@app.route("/create_game", methods=["GET", "POST"])
+@login_required
+def create_game():
+    """"""
+
+
+    return render_template("create_game.html", darkmode=session["dark_mode"])
+
+
+@app.route("/games", methods=["GET","POST"])
+@login_required
+def games():
+    """"""
+
+    return render_template("games.html", darkmode=session["dark_mode"])
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

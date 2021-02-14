@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}
+	{{ username }}'s profile
+{% endblock %}
+
+{% block game %}
+	active
+{% endblock %}
+
+{% block current_path %}
+	/games
+{% endblock %}
+
+{% block main %}
+
+
+	<button id ="toggle_from" type="button" class="cstmbtn btn
+	{% if darkmode > 0 %}
+		btn-outline-light
+	{% else %}
+		btn-outline-dark
+	{% endif %}">Create game</button>
+
+	<div id="crt_gm"></div>
+
+	<div class="row">
+
+		<div class="col">
+
+		</div>
+
+		<div class="col">
+
+		</div>
+
+	</div>
+
+	<script type="text/javascript">
+
+        // an event listener when the create game button is clicked
+        document.getElementById('toggle_from').addEventListener('click', function() {
+
+            // an XMLHttpRequest
+            var req = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and put it in
+            // the tbody with the id of search_body
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+
+                	// the html will be loaded to #crt_gm
+                    $('#crt_gm').html(req.responseText);
+                }
+            }
+
+            // it does a get request with the arg of q = (input.value)
+            req.open('GET', '/create_game', true);
+
+            // once it gets the response it sends it
+            req.send();
+        });
+
+	</script>
+{% endblock %}
