@@ -387,18 +387,24 @@ def users():
             # a variable that contains the id to make the code readable
             friend_id = int(request.form.get("send_fr"))
 
+            # checks if the id exists in the database
+            rows = db(f"SELECT * FROM users WHERE id = {friend_id}")
+
+            # preforming the checks
+            if len(rows) == 0:
+                flash("Invalid request")
+                return redirect("/users")
+
             # checks if the user is already a friend
-            rows_f = db(f"SELECT * FROM friends \
+            rows= db(f"SELECT * FROM friends \
                 WHERE user_id = {session['user_id']} \
                 AND friend_id = {friend_id}")
 
-            # checks if the id exists in the database
-            rows_u = db(f"SELECT * FROM users WHERE id = {friend_id}")
 
-            # preforming the checks
-            if len(rows_u) == 0 or len(rows_f) != 0:
-                flash("Invalid request")
+            if len(rows) != 0:
+                flash("You're already friends")
                 return redirect("/users")
+
 
             # Checks if the friend already sent a friend request
             rows = db(f"SELECT * FROM friend_req WHERE \
@@ -427,7 +433,7 @@ def users():
                     VALUES ({session['user_id']}, {friend_id})")
 
             # now that it has been added we can notify the user and redirect
-            flash(f"Friend request has been sent to {rows_u[0]['username']}")
+            flash(f"Friend request has been sent")
             return redirect("/users")
 
         # if none of the requests got called
@@ -479,16 +485,40 @@ def search_users():
 @app.route("/create_game", methods=["GET", "POST"])
 @login_required
 def create_game():
-    """"""
+    """handles the game creation form"""
 
+    # an empty list to load friends into
+    friends_unsorted = []
 
-    return render_template("create_game.html", darkmode=session["dark_mode"])
+    # gets all the id's of the user's friends
+    rows = db(f"SELECT * FROM friends WHERE user_id = {session['user_id']}")
+
+    # loops over all the ids
+    for row in rows:
+
+        # looks for the friend in users
+        look = db(f"SELECT * FROM users WHERE id = {row['friend_id']}")
+        
+        friend = {
+        'user_id': look[0]['id'],
+        'username': look[0]['username'],
+        'image_id': look[0]['image_id'],
+        }
+
+        # appends the friend dict to the list
+        friends_unsorted.append(friend)
+
+        # sorts the friends by username
+        friends = sorted(friends_unsorted, key=lambda k: k['username'])
+
+    return render_template("create_game.html", darkmode=session["dark_mode"] ,\
+        friends=friends)
 
 
 @app.route("/games", methods=["GET","POST"])
 @login_required
 def games():
-    """"""
+    """loads the games associated with the logged in user"""
 
     return render_template("games.html", darkmode=session["dark_mode"])
 

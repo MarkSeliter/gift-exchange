@@ -1,27 +1,39 @@
-<form>
+<form id="crt_gm_frm">
 	Game name:
 	<input type="text" name="">
+
 	Description:
-	<input type="text" name="">
+	<textarea class="form-control" name="description" form="crt_gm_frm"></textarea>
+
 	Approximate price:
 	<input type="n" name="">
 
-	<div class="btn-group">
-		<button class="btn dropdown-toggle
-			{% if darkmode > 0 %}
-				btn-outline-light
-			{% else %}
-				btn-outline-dark
-			{% endif %}"
-			type="button" data-bs-toggle="dropdown" aria-expanded="false">
-			Invite
-		</button>
+	<ul class="form-ul">
+		<li class="dropdown">
 
-		<ul class="dropdown-menu">
+			<a href="#" data-toggle="dropdown" class="dropdown-toggle btn 
+	    		{% if darkmode > 0 %}
+		    		link_light
+	    		{% else %}
+		    		link_dark
+	    		{% endif %}">
 
-		</ul>
+				Invite friends<b class="caret"></b>
+			</a>
+			<ul class="dropdown-menu">
+				{% for friend in friends %}
+					<li>
+						<label class="checkbox">
+							<input type="checkbox" name="participant"
+							value="{{ friend['user_id']}}">
+							{{ friend['username']}}
+						</label>
+					</li>
+				{% endfor %}
+			</ul>
 
-	</div>
+		</li>
+	</ul>
 
 	<button>Create</button>
 </form>

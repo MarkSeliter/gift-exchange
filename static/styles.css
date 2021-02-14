@@ -88,3 +88,12 @@ main img
 {
     color: #4c4c4c;
 }
+
+.dropdown-menu {         
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.form-ul {
+    list-style-type: none;
+}
