@@ -1,39 +1,47 @@
-<form id="crt_gm_frm">
-	Game name:
-	<input type="text" name="">
+<form action="/create_game" method ="post" id="crt_gm_frm">
+	<div class="form-group">
+		<input class="form-control" name ="g_name" type="text" placeholder="Game name">
+	</div>
 
-	Description:
-	<textarea class="form-control" name="description" form="crt_gm_frm"></textarea>
+	<div class="form-group form-floating">
+		<textarea class="form-control" name="desc" form="crt_gm_frm"
+		placeholder="Description (price range, theme, excluded gifts...)"></textarea>
+	</div>
 
-	Approximate price:
-	<input type="n" name="">
+	<div class="form-group">
+		<ul class="form-ul">
+			<li class="dropdown">
 
-	<ul class="form-ul">
-		<li class="dropdown">
+				<a href="#" data-toggle="dropdown" class="dropdown-toggle btn 
+		    		{% if darkmode > 0 %}
+			    		link_light
+		    		{% else %}
+			    		link_dark
+		    		{% endif %}">
 
-			<a href="#" data-toggle="dropdown" class="dropdown-toggle btn 
-	    		{% if darkmode > 0 %}
-		    		link_light
-	    		{% else %}
-		    		link_dark
-	    		{% endif %}">
+					Invite friends<b class="caret"></b>
+				</a>
+				<ul class="dropdown-menu">
+					{% for friend in friends %}
+						<li>
+							<label class="checkbox">
+								<input type="checkbox" name="par"
+								value="{{ friend['user_id']}}">
+								<img class="pp-sm" src="static/pp/{{ friend['image_id'] }}.png">
+								<span style="padding-right: 5px;">{{ friend['username']}}</span>
+							</label>
+						</li>
+					{% endfor %}
+				</ul>
 
-				Invite friends<b class="caret"></b>
-			</a>
-			<ul class="dropdown-menu">
-				{% for friend in friends %}
-					<li>
-						<label class="checkbox">
-							<input type="checkbox" name="participant"
-							value="{{ friend['user_id']}}">
-							{{ friend['username']}}
-						</label>
-					</li>
-				{% endfor %}
-			</ul>
+			</li>
+		</ul>
+	</div>
 
-		</li>
-	</ul>
-
-	<button>Create</button>
+	<button type="submit" class="cstmbtn btn
+	{% if darkmode > 0 %}
+		btn-outline-light
+	{% else %}
+		btn-outline-dark
+	{% endif %}">Create</button>
 </form>

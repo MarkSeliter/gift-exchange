@@ -21,15 +21,13 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# for i in range(2, 10, 1):
-#     db("INSERT INTO friends (user_id, friend_id) VALUES(1, {})".format(i))
-#     db("INSERT INTO friends (user_id, friend_id) VALUES({}, 1)".format(i))
 
 @app.route("/dark_mode", methods=["POST"])
 @login_required
@@ -486,6 +484,61 @@ def search_users():
 @login_required
 def create_game():
     """handles the game creation form"""
+    if request.method == "POST":
+
+        # checking if any input is empty
+        if not request.form.get('g_name') or \
+        not request.form.get('desc'):
+            flash("Please do not leave empty inputs")
+            return redirect("/games")
+
+        # checking if at least 2 other players are selected
+        if len(request.form.getlist('par')) < 2:
+            flash("Please choose at least 2 other participants")
+            return redirect("/games")
+
+        # check if an equal game name already exists
+        game_name = request.form.get('g_name')
+
+        rows = db(f"SELECT * FROM games WHERE game_name = '{game_name}'")
+
+        if len(rows) > 0:
+            flash(f"{game_name} already exists, please try another name")
+            return redirect("/games")
+
+        # checking if all participants are in the user's friends list
+        par = request.form.getlist('par')
+
+        for p in par:
+
+            rows = db(f"SELECT * FROM friends WHERE \
+                user_id = {session['user_id']} AND \
+                friend_id = {p}")
+
+            if not rows:
+                flash("ERROR, tried inviting user which \
+                    is not in your friends list")
+                return redirect("/games")
+
+        # insert game details into the db with def status of 0 (pending)
+        desc = request.form.get('desc')
+
+        db(f"INSERT INTO games (game_name, game_desc, admin_id) \
+            VALUES ('{game_name}', '{desc}', {session['user_id']})")
+
+        # fetching the game details (mainly for the id)
+        game = db(f"SELECT * FROM games WHERE game_name = '{game_name}'")
+
+        # adding game requests to all participants
+        for p in par:
+            db(f"INSERT INTO game_req (admin_id, reciever_id, game_id) VALUES \
+                ({session['user_id']}, {p}, {game[0]['id']})")
+
+        # adding the admin of the game to the participants
+        db(f"INSERT INTO par (user_id, game_id) VALUES \
+            ({session['user_id']}, {game[0]['id']})")
+
+        return redirect("/games")
 
     # an empty list to load friends into
     friends_unsorted = []
@@ -515,12 +568,60 @@ def create_game():
         friends=friends)
 
 
-@app.route("/games", methods=["GET","POST"])
+@app.route("/games", methods=["GET"])
 @login_required
 def games():
     """loads the games associated with the logged in user"""
 
-    return render_template("games.html", darkmode=session["dark_mode"])
+    # an an empty unsorted list of pending games
+    pending_games_unsorted = []
+
+    rows = db(f"SELECT * FROM par WHERE user_id = {session['user_id']}")
+
+    for row in rows:
+
+        # list of participants
+        look = db(f"SELECT * FROM par WHERE game_id = {row['game_id']}")
+
+        par_unsorted = []
+
+        # append participant info into the list
+        for l in look:
+
+            # looks for the participant in users
+            r = db(f"SELECT * FROM users WHERE id = {l['user_id']}")
+            
+            temp = {
+            'user_id': r[0]['id'],
+            'username': r[0]['username'],
+            'image_id': r[0]['image_id'],
+            }
+
+            # appends the friend dict to the list
+            par_unsorted.append(temp)
+
+        # sorts the friends by username
+        par = sorted(par_unsorted, key=lambda k: k['username'])
+
+        look = db(f"SELECT * FROM games WHERE id = {row['game_id']} AND \
+            status = 0")
+
+        temp = {
+        'game_name': look[0]['game_name'],
+        'game_desc': look[0]['game_desc'],
+        'admin_id': look[0]['admin_id'],
+        'par': par
+        }
+
+        # appends the friend dict to the list
+        pending_games_unsorted.append(temp)
+
+    # sorts the friends by username
+    pending_games = sorted(pending_games_unsorted, \
+        key=lambda k: k['game_name'])
+
+    return render_template("games.html", darkmode=session["dark_mode"], \
+        pending_games=pending_games)
 
 
 if __name__ == '__main__':

@@ -13,31 +13,79 @@
 {% endblock %}
 
 {% block main %}
-
-
-	<button id ="toggle_from" type="button" class="cstmbtn btn
-	{% if darkmode > 0 %}
-		btn-outline-light
-	{% else %}
-		btn-outline-dark
-	{% endif %}">Create game</button>
-
-	<p>
-	<div id="crt_gm"></div>
-	</p>
 	<div class="row">
-
 		<div class="col">
-
+			<button id ="toggle_from" type="button" class="cstmbtn btn
+			{% if darkmode > 0 %}
+				btn-outline-light
+			{% else %}
+				btn-outline-dark
+			{% endif %}">Create game</button>
 		</div>
+	</div>
 
-		<div class="col">
+	<div class="row justify-content-center">
+		<div class="col-auto"id="crt_gm"></div>
+	</div>
 
+	<div class="row justify-content-center" id="pending_games">
+
+		<div class="col-auto">
+			<h3>Pending games</h3>
 		</div>
 
 	</div>
 
+		{% for game in pending_games %}
+			<div class="row justify-content-center">
+				<div class="col-auto" id="pending_games">
+				    <table class="table table-responsive table-borderless
+				    table-hover
+				    {% if darkmode > 0 %}
+			    	    table-dark dark_background
+				    {% endif %}">
+
+			        	<thead>
+			        		<tr>
+			        			<th colspan="4">{{ game['game_name'] }}</th>
+			        		</tr>
+			        	</thead>
+
+			        	<tbody>
+			        		<tr>
+
+			        			<td>
+			        				<p style="text-align: left !important; 
+			        				white-space: pre-line;">{{ game['game_desc'] }}<p>
+			        			</td>
+
+				        		<td>
+				        			<div class="dropdown">
+										<button class="btn btn-secondary dropdown-toggle" type="button" 
+										id="dropdownMenuButton1" data-bs-toggle="dropdown" 
+										aria-expanded="false">
+										Dropdown button
+										</button>
+										<ul class="dropdown-menu" 
+										aria-labelledby="dropdownMenuButton1">
+										<li><a class="dropdown-item" href="#">Action</a></li>
+										<li><a class="dropdown-item" href="#">Another action</a></li>
+										<li><a class="dropdown-item" href="#">Something else here</a></li>
+										</ul>
+									</div>
+				        		</td>
+
+			        		</tr>
+			    	    </tbody>
+
+			        </table>
+			    </div>
+		    </div>
+        {% endfor %}
+
 	<script type="text/javascript">
+
+		var click = 1;
 
         // an event listener when the create game button is clicked
         document.getElementById('toggle_from').addEventListener('click', function() {
@@ -51,7 +99,14 @@
                 if(req.readyState == 4 && req.status == 200){
 
                 	// the html will be loaded to #crt_gm
-                    $('#crt_gm').html(req.responseText);
+                	if(click > 0){
+                		$('#crt_gm').html(req.responseText);
+                		click *= -1;
+                	}
+                    else {
+                    	$('#crt_gm').html("");
+                    	click *= -1;
+                    }
                 }
             }
 

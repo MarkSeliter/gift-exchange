@@ -31,12 +31,13 @@
 
 	    <div class="col">
 
-	        <table class="table {% if darkmode > 0 %} table-dark dark_background {% endif %} table-hover">
+	        <table class="table table-responsive table-borderless
+    	    table-hover
+    	    {% if darkmode > 0 %}
+	    	    table-dark dark_background
+    	    {% endif %}">
 	        	<thead><tr><th>{{ username }}'s profile</th></tr></thead>
 	        	<tbody>
-	        		<tr>
-	        			<td>Change location</td>
-	        		</tr>
 	        		<tr>
 	        			<td>Change email</td>
 	        		</tr>
