@@ -1,0 +1,68 @@
+<div class="row justify-content-center" id="Active_games">
+
+	<div class="col-auto">
+		<h3>Active games</h3>
+	</div>
+
+</div>
+<dir></dir>
+
+<div class="row justify-content-center">
+	<div class="col-auto" id="pending_games">
+	    <table class="table table-responsive table-borderless
+	    table-hover
+	    {% if darkmode > 0 %}
+    	    table-dark dark_background
+	    {% endif %}">
+		    <tbody>
+				{% for game in games %}
+        		<tr>
+
+        			<td>
+        				<p style="text-align: left !important; 
+        				white-space: pre-line;">
+        				Game name: {{ game['game_name'] }}
+        				Created by: {{ game['creator'] }}
+        				You are gifting to:  <span style="color: green;">{{ game['gifted_u'] }}
+        				</span>
+        				{{ game['game_desc'] }}<p>
+        			</td>
+
+	        		<td>
+	        			<div class="dropdown">
+							<button class="btn dropdown-toggle
+							{% if darkmode > 0 %}
+								btn-outline-light
+							{% else %}
+								btn-outline-dark
+							{% endif %}" 
+							type="button" data-toggle="dropdown">Participants
+							<span class="caret"></span></button>
+							<ul class="dropdown-menu">
+								{% for i in game['par'] %}
+									<li class ="game_user_list">
+										<img class="pp-sm game_pp" 
+										src="static/pp/{{ i['image_id'] }}.png">
+										<span>{{ i['username']}}</span>
+									</li>
+								{% endfor %}
+							</ul>
+						</div><br>
+	        		{% if game['admin'] %}
+	        		<td>
+	        			<form action="/activate_game" method="post">
+	        				<input type="hidden" name="game_id" 
+	        				value ="{{ game['game_id'] }}">
+	        				<button class="btn btn-outline-success"
+	        				type="submit">
+	        					End game
+	        				</button>
+	        			</form>
+	        		</td>
+	        		{% endif %}
+        		</tr>
+				{% endfor %}
+			</tbody>
+        </table>
+    </div>
+</div>

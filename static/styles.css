@@ -97,3 +97,13 @@ main img
 .form-ul {
     list-style-type: none;
 }
+
+.game_user_list
+{
+    padding-bottom: 10px;
+}
+
+.game_pp
+{
+    float: left; padding-right: 5px;
+}

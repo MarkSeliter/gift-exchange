@@ -1,0 +1,54 @@
+<div class="row justify-content-center" id="Active_games">
+
+	<div class="col-auto">
+		<h3>Game requests</h3>
+	</div>
+
+</div>
+<dir></dir>
+
+<div class="row justify-content-center">
+	<div class="col-auto" id="pending_games">
+	    <table class="table table-responsive table-borderless
+	    table-hover
+	    {% if darkmode > 0 %}
+    	    table-dark dark_background
+	    {% endif %}">
+		    <tbody>
+				{% for request in requests %}
+	        		<tr>
+	        			<td>
+	        				<p style="text-align: left !important; 
+	        				white-space: pre-line;">
+	        				Game name: {{ request['game_name'] }}
+	        				Created by: {{ request['creator'] }}
+	        				{{ request['game_desc'] }}<p>
+	        			</td>
+	        			<td>
+	        				<form action="/handle_game_request" method="get">
+		        				<input type="hidden" name="game_id"
+		        				value="{{ request['game_id'] }}">
+		        				<input type="hidden" name="a_o_d"
+		        				value="1">
+		        				<button type="submit" class="cstmbtn btn btn-outline-success">
+									Accept
+								</button>
+							</form>
+	        			</td>
+	        			<td>
+	        				<form action="/handle_game_request" method="get">
+		        				<input type="hidden" name="game_id"
+		        				value="{{ request['game_id'] }}">
+		        				<input type="hidden" name="a_o_d"
+		        				value="0">
+		        				<button type="submit" class="cstmbtn btn btn-outline-danger">
+									Deny
+								</button>
+							</form>
+	        			</td>
+	        		</tr>
+				{% endfor %}
+			</tbody>
+        </table>
+    </div>
+</div>

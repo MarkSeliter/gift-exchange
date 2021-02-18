@@ -23,69 +23,94 @@
 			{% endif %}">Create game</button>
 		</div>
 	</div>
-
+	<dir></dir>
 	<div class="row justify-content-center">
 		<div class="col-auto"id="crt_gm"></div>
 	</div>
+	<dir></dir>
 
-	<div class="row justify-content-center" id="pending_games">
-
-		<div class="col-auto">
-			<h3>Pending games</h3>
+	<div class="row">
+		<div class="col">
+			<button id ="toggle_active_games" type="button" class="cstmbtn btn
+			{% if darkmode > 0 %}
+				btn-outline-light
+			{% else %}
+				btn-outline-dark
+			{% endif %}">Active games</button>
 		</div>
-
 	</div>
+	<dir></dir>
+	<div class="row justify-content-center">
+		<div class="col-auto"id="acv_gm"></div>
+	</div>
+	<dir></dir>
 
-		{% for game in pending_games %}
-			<div class="row justify-content-center">
-				<div class="col-auto" id="pending_games">
-				    <table class="table table-responsive table-borderless
-				    table-hover
-				    {% if darkmode > 0 %}
-			    	    table-dark dark_background
-				    {% endif %}">
+	<div class="row">
+		<div class="col">
+			<button id ="toggle_pending_games" type="button" class="cstmbtn btn
+			{% if darkmode > 0 %}
+				btn-outline-light
+			{% else %}
+				btn-outline-dark
+			{% endif %}">Pending games</button>
+		</div>
+	</div>
+	<dir></dir>
+	<div class="row justify-content-center">
+		<div class="col-auto"id="pnd_gm"></div>
+	</div>
+	<dir></dir>
 
-			        	<thead>
-			        		<tr>
-			        			<th colspan="4">{{ game['game_name'] }}</th>
-			        		</tr>
-			        	</thead>
-
-			        	<tbody>
-			        		<tr>
-
-			        			<td>
-			        				<p style="text-align: left !important; 
-			        				white-space: pre-line;">{{ game['game_desc'] }}<p>
-			        			</td>
-
-				        		<td>
-				        			<div class="dropdown">
-										<button class="btn btn-secondary dropdown-toggle" type="button" 
-										id="dropdownMenuButton1" data-bs-toggle="dropdown" 
-										aria-expanded="false">
-										Dropdown button
-										</button>
-										<ul class="dropdown-menu" 
-										aria-labelledby="dropdownMenuButton1">
-										<li><a class="dropdown-item" href="#">Action</a></li>
-										<li><a class="dropdown-item" href="#">Another action</a></li>
-										<li><a class="dropdown-item" href="#">Something else here</a></li>
-										</ul>
-									</div>
-				        		</td>
-
-			        		</tr>
-			    	    </tbody>
-
-			        </table>
-			    </div>
-		    </div>
-        {% endfor %}
+	<div class="row">
+		<div class="col">
+			<button id ="toggle_game_req" type="button" class="cstmbtn btn
+			{% if darkmode > 0 %}
+				btn-outline-light
+			{% else %}
+				btn-outline-dark
+			{% endif %}">Game requests</button>
+		</div>
+	</div>
+	<dir></dir>
+	<div class="row justify-content-center">
+		<div class="col-auto"id="gm_req"></div>
+	</div>
+	<dir></dir>
 
 	<script type="text/javascript">
 
-		var click = 1;
+		var click, click_p, click_r, click_a;
+		click = click_p = click_r = click_a = 1;
+
+        // an event listener when the create game button is clicked
+        document.getElementById('toggle_active_games').addEventListener('click', function() {
+
+            // an XMLHttpRequest
+            var req = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and put it in
+            // the tbody with the id of search_body
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+
+                	// the html will be loaded to #crt_gm
+                	if(click_a > 0){
+                		$('#acv_gm').html(req.responseText);
+                		click_a *= -1;
+                	}
+                    else {
+                    	$('#acv_gm').html("");
+                    	click_a *= -1;
+                    }
+                }
+            }
+
+            // it does a get request with the arg of q = (input.value)
+            req.open('POST', '/load_active_games', true);
+
+            // once it gets the response it sends it
+            req.send();
+        });
 
         // an event listener when the create game button is clicked
         document.getElementById('toggle_from').addEventListener('click', function() {
@@ -112,6 +137,66 @@
 
             // it does a get request with the arg of q = (input.value)
             req.open('GET', '/create_game', true);
+
+            // once it gets the response it sends it
+            req.send();
+        });
+
+        // an event listener when the create game button is clicked
+        document.getElementById('toggle_pending_games').addEventListener('click', function() {
+
+            // an XMLHttpRequest
+            var req = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and put it in
+            // the tbody with the id of search_body
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+
+                	// the html will be loaded to #crt_gm
+                	if(click_p > 0){
+                		$('#pnd_gm').html(req.responseText);
+                		click_p *= -1;
+                	}
+                    else {
+                    	$('#pnd_gm').html("");
+                    	click_p *= -1;
+                    }
+                }
+            }
+
+            // it does a get request with the arg of q = (input.value)
+            req.open('GET', '/load_games?s=0', true);
+
+            // once it gets the response it sends it
+            req.send();
+        });
+
+        // an event listener when the create game button is clicked
+        document.getElementById('toggle_game_req').addEventListener('click', function() {
+
+            // an XMLHttpRequest
+            var req = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and put it in
+            // the tbody with the id of search_body
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+
+                	// the html will be loaded to #crt_gm
+                	if(click_r > 0){
+                		$('#gm_req').html(req.responseText);
+                		click_r *= -1;
+                	}
+                    else {
+                    	$('#gm_req').html("");
+                    	click_r *= -1;
+                    }
+                }
+            }
+
+            // it does a get request with the arg of q = (input.value)
+            req.open('GET', '/game_requests', true);
 
             // once it gets the response it sends it
             req.send();

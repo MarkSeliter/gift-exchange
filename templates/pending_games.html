@@ -1,0 +1,140 @@
+<div class="row justify-content-center" id="Active_games">
+
+	<div class="col-auto">
+		<h3>Pending games</h3>
+	</div>
+
+</div>
+<dir></dir>
+
+<div class="row justify-content-center">
+	<div class="col-auto" id="pending_games">
+	    <table class="table table-responsive table-borderless
+	    table-hover
+	    {% if darkmode > 0 %}
+    	    table-dark dark_background
+	    {% endif %}">
+		    <tbody>
+				{% for game in games %}
+        		<tr>
+
+        			<td>
+        				<p style="text-align: left !important; 
+        				white-space: pre-line;">
+        				Game name: {{ game['game_name'] }}
+        				Created by: {{ game['creator'] }}
+        				{{ game['game_desc'] }}<p>
+        			</td>
+
+	        		<td>
+	        			<div class="dropdown">
+							<button class="btn dropdown-toggle
+							{% if darkmode > 0 %}
+								btn-outline-light
+							{% else %}
+								btn-outline-dark
+							{% endif %}" 
+							type="button" data-toggle="dropdown">Participants
+							<span class="caret"></span></button>
+							<ul class="dropdown-menu">
+								{% for i in game['par'] %}
+									<li class ="game_user_list">
+										<img class="pp-sm game_pp" 
+										src="static/pp/{{ i['image_id'] }}.png">
+										<span>{{ i['username']}}</span>
+									</li>
+								{% endfor %}
+							</ul>
+						</div><br>
+
+						<div class="dropdown">
+							<button class="btn dropdown-toggle
+							{% if darkmode > 0 %}
+								btn-outline-light
+							{% else %}
+								btn-outline-dark
+							{% endif %}" 
+							type="button" data-toggle="dropdown">Pending
+							<span class="caret"></span></button>
+							<ul class="dropdown-menu">
+								{% for i in game['pending'] %}
+									<li class ="game_user_list">
+										<img class="pp-sm game_pp" 
+										src="static/pp/{{ i['image_id'] }}.png">
+										<span>{{ i['username']}}</span>
+									</li>
+								{% endfor %}
+							</ul>
+						</div> 
+	        		</td>
+
+	        		{% if game['admin'] %}
+		        		<td>
+	        				<form action="/invite" method="post">
+		        				<input type="hidden" name="game_id"
+		        				value="{{ game['game_id'] }}">
+		        				<div class="form-group">
+									<ul class="form-ul">
+										<li class="dropdown">
+
+											<a href="#" data-toggle="dropdown" 
+											class="dropdown-toggle btn 
+									    		{% if darkmode > 0 %}
+										    		link_light
+									    		{% else %}
+										    		link_dark
+									    		{% endif %}">
+
+												Invite friends<b class="caret"></b>
+											</a>
+											<ul class="dropdown-menu">
+												{% for friend in game['invite'] %}
+													<li>
+														<label class="checkbox">
+															<input type="checkbox" 
+															name="friends"
+															value="{{ friend['user_id']}}">
+															<img class="pp-sm" 
+															src="static/pp/{{ friend['image_id'] }}.png">
+															<span style="padding-right: 5px;">
+																{{ friend['username']}}
+															</span>
+														</label>
+													</li>
+												{% endfor %}
+											</ul>
+										</li>
+									</ul>
+								</div>
+		        				<button class="btn
+								{% if darkmode > 0 %}
+									btn-outline-light
+								{% else %}
+									btn-outline-dark
+								{% endif %}" 
+								 type="submit">
+		        					Invite
+		        				</button>
+	        				</form><br>
+		        			<form action="/activate_game" method="post">
+		        				<input type="hidden" name="game_id" 
+		        				value ="{{ game['game_id'] }}">
+		        				<button class="btn btn-outline-success" type="submit">
+		        					Start
+		        				</button>
+		        			</form><br>
+		        			<form action="/" method="">
+		        				<input type="hidden" name="game_id" 
+		        				value ="{{ game['game_id'] }}">
+		        				<button class="btn btn-outline-success" type="submit">
+		        					Delete game
+		        				</button>
+		        			</form><br>
+		        		</td>
+	        		{% endif %}
+        		</tr>
+				{% endfor %}
+			</tbody>
+        </table>
+    </div>
+</div>
