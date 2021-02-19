@@ -457,6 +457,15 @@ def users():
                 return redirect("/users")
 
 
+            # check if the user already sent a friend request
+            rows = db(f"SELECT * FROM friend_req WHERE \
+                reciever_id = {friend_id} AND \
+                sender_id = {session['user_id']}")
+
+            if len(rows) != 0:
+                flash("You've already sent a friend request previously")
+                return redirect("/users")
+                
             # Checks if the friend already sent a friend request
             rows = db(f"SELECT * FROM friend_req WHERE \
                 reciever_id = {session['user_id']} AND \
