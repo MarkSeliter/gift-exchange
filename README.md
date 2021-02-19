@@ -16,3 +16,5 @@ JavaScript
 Sqlite
 Jinja2 (using Flask)
 Linux (using wsl2)
+
+## this was cs50
