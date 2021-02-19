@@ -13,46 +13,81 @@
 {% endblock %}
 
 {% block main %}
-    <div class="row">
+<div class="row">
 
-    	<div class="col">
-    		<div class="btn-group">
-    		    <form action="/" method="post">
-    			    <input type="hidden" name="change_pp" value="-1">
-    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}"><---</button>
-    		    </form>
-    		    <form action="/" method="post">
-    			    <input type="hidden" name="change_pp" value="1">
-    			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}">---></button>
-    		    </form>
-    		</div><br>
-            <img class="pp_profile" src="/static/pp/{{ image }}.png">
-        </div>
+	<div class="col">
+		<div class="btn-group">
+		    <form action="/" method="post">
+			    <input type="hidden" name="change_pp" value="-1">
+			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}"><---</button>
+		    </form>
+		    <form action="/" method="post">
+			    <input type="hidden" name="change_pp" value="1">
+			    <button type="submit" class="cstmbtn btn btn-outline-{% if darkmode > 0 %}light{% else %}dark{% endif %}">---></button>
+		    </form>
+		</div><br>
+        <img class="pp_profile" src="/static/pp/{{ image }}.png">
+    </div>
 
-	    <div class="col">
+    <div class="col">
 
-	        <table class="table table-responsive table-borderless
-    	    table-hover
-    	    {% if darkmode > 0 %}
-	    	    table-dark dark_background
-    	    {% endif %}">
-	        	<thead><tr><th>{{ username }}'s profile</th></tr></thead>
-	        	<tbody>
-	        		<tr>
-	        			<td>Change email</td>
-	        		</tr>
-	        		<tr>
-	        			<td>Change password <span class="glyphicon glyphicon-user"></span></td>
-	        		</tr>
-	        		<tr>
-	        			<td>
+        <table class="table table-responsive table-borderless
+	    table-hover
+	    {% if darkmode > 0 %}
+    	    table-dark dark_background
+	    {% endif %}">
+        	<thead><tr><th>{{ username }}'s profile</th></tr></thead>
+        	<tbody>
+        		<tr>
+        			<td>
+                        <button id="change_pass" type="button" class="btn custom-btn btn-sm
+                        {% if darkmode > 0 %}
+                            btn-dark
+                        {% else %}
+                            btn-light
+                        {% endif %}">
+                            Change password <i class="fas fa-key"></i>
+                        </button>
+                    </td>
+        		</tr>
+        	</tbody>
+        </table> 
 
-	        			</td>
-	        		</tr>
-	        	</tbody>
-	        </table> 
-
-        </div>
+        <div id="pass_form"></div>
 
     </div>
+
+</div>
+
+<script type="text/javascript">
+
+    var click = 1
+
+    // an event listener when the create game button is clicked
+    document.getElementById('change_pass').addEventListener('click', function() {
+
+        // an XMLHttpRequest
+        var req = new XMLHttpRequest();
+
+        // when the readystate is 4 it will get the response and fill the html
+        req.onreadystatechange = function() {
+            if(req.readyState == 4 && req.status == 200){
+
+                if(click > 0){
+                    $('#pass_form').html(req.responseText);
+                    click *= -1;
+                }
+                else {
+                    $('#pass_form').html("");
+                    click *= -1;
+                }
+            }
+        }
+
+        req.open('GET', '/pass_form', true);
+
+        req.send();
+    });
+
+</script>
 {% endblock %}

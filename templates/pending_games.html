@@ -54,10 +54,10 @@
 							{% else %}
 								btn-outline-dark
 							{% endif %}" 
-							type="button" data-toggle="dropdown">Pending
+							type="button" data-toggle="dropdown">Pending request
 							<span class="caret"></span></button>
 							<ul class="dropdown-menu">
-								{% for i in game['pending'] %}
+								{% for i in game['game_req'] %}
 									<li class ="game_user_list">
 										<img class="pp-sm game_pp" 
 										src="static/pp/{{ i['image_id'] }}.png">
@@ -123,11 +123,11 @@
 		        					Start
 		        				</button>
 		        			</form><br>
-		        			<form action="/" method="">
+		        			<form action="/delete_game" method="post">
 		        				<input type="hidden" name="game_id" 
 		        				value ="{{ game['game_id'] }}">
-		        				<button class="btn btn-outline-success" type="submit">
-		        					Delete game
+		        				<button class="btn btn-outline-danger" type="submit">
+		        					Terminate
 		        				</button>
 		        			</form><br>
 		        		</td>

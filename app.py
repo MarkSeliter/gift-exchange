@@ -169,7 +169,6 @@ def register():
                 is already taken")
             return redirect("/register")
 
-
         # Checks if email is empty
         if not request.form.get("email"):
             flash("Must provide email")
@@ -216,6 +215,53 @@ def register():
 
     # if its a get method (load the register page to register)
     return render_template("register.html")
+
+
+@app.route("/change_pass", methods=["POST"])
+@login_required
+def change_pass():
+    """Update user's password to a new password"""
+
+    # check if user provided password
+    if not request.form.get('password'):
+        flash("Must provide old password")
+        return redirect("/")
+
+    # check if user provided new passwqord
+    if not request.form.get('password_1'):
+        flash("Must repeat old password")
+        return redirect("/")
+
+    # check if user repeated new password
+    if not request.form.get('password_2'):
+        flash("Must provide new password")
+        return redirect("/")
+
+    rows = db(f"SELECT * FROM users WHERE id = {session['user_id']}")
+    # check if user provided correct old password
+    if not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        flash("Incorrect password")
+        return redirect("/")
+
+    # check if new and repeated passwords match
+    if request.form.get('password_1') != request.form.get('password_2'):
+        flash("Passwords dont match")
+        return redirect("/")
+
+    # now that passwords match the password can be updated
+    db(f"UPDATE users SET hash = '{generate_password_hash(request.form.get('password_1'))}' \
+        WHERE id = {session['user_id']}")
+
+    flash("Password updated successfully")
+    return redirect("/")
+
+
+@app.route("/pass_form", methods=["GET"])
+@login_required
+def pass_form():
+    """Loads change_pass form"""
+
+    return render_template("pass_form.html", darkmode=session["dark_mode"])
 
 
 @app.route("/friends", methods=["GET", "POST"])
@@ -544,6 +590,7 @@ def create_game():
         db(f"INSERT INTO par (user_id, game_id) VALUES \
             ({session['user_id']}, {game[0]['id']})")
 
+        flash("Game created successfully")
         return redirect("/games")
 
     # an empty list to load friends into
@@ -579,145 +626,28 @@ def create_game():
 def load_games():
     """loads the games associated with the logged in user"""
 
-    # an an empty unsorted list of games
-    games_unsorted = []
-
-    rows = db(f"SELECT * FROM par WHERE user_id = {session['user_id']}")
-
-    for row in rows:
-
-        # list of participants
-        look = db(f"SELECT * FROM par WHERE game_id = {row['game_id']}")
-
-        par_unsorted = []
-
-        # append participant info into the list
-        for l in look:
-
-            # looks for the participant in users
-            r = db(f"SELECT * FROM users WHERE id = {l['user_id']}")
-            
-            temp = {
-            'user_id': r[0]['id'],
-            'username': r[0]['username'],
-            'image_id': r[0]['image_id']
-            }
-
-            # appends the friend dict to the list
-            par_unsorted.append(temp)
-
-        # sorts the friends by username
-        par = sorted(par_unsorted, key=lambda k: k['username'])
-
-        look = db(f"SELECT * FROM games WHERE id = {row['game_id']} AND \
-            status = 0")
-
-        # a dict containing all relevant game info
-        temp = {
-        'game_id': row['game_id'],
-        'status': look[0]['status'],
-        'game_name': look[0]['game_name'],
-        'game_desc': look[0]['game_desc'],
-        'par': par
-        }
-
-        # if its a pending game add a list of pending requests
-        if look[0]['status'] == 0:
-
-            req = db(f"SELECT * FROM users WHERE id IN \
-                (SELECT reciever_id FROM game_req WHERE \
-                game_id = {row['game_id']}) ORDER BY username")
-            
-            pending = []
-
-            for r in req:
-
-                pend = {
-                    'user_id': r['id'],
-                    'username': r['username'],
-                    'image_id': r['image_id']
-                }
-
-                pending.append(pend)
-
-            temp['pending'] = pending
-
-        # gets the game creator's username
-        creator = db(f"SELECT * FROM users WHERE id = {look[0]['admin_id']}")
-        temp['creator'] = creator[0]['username']
-
-        # checks if the user is an admin
-        if look[0]['admin_id'] == session['user_id']:
-            temp['admin'] = True
-
-        else:
-            temp['admin'] = False
-
-        # grants ability to the admin to invite friends to pending games
-        if temp['admin'] and temp['status'] == PENDING_GAME:
-            # get a list of invitable friends for the admin
-            # friends that are not participants already or not pending
-            uninvited = db(f"SELECT * FROM users WHERE id IN \
-                (SELECT friend_id FROM friends WHERE \
-                user_id = {session['user_id']} AND friend_id NOT IN \
-                (SELECT user_id FROM par WHERE \
-                game_id = {temp['game_id']}) AND friend_id NOT IN \
-                (SELECT reciever_id FROM game_req WHERE \
-                game_id = {temp['game_id']})) ORDER BY username")
-
-            invite = []
-
-            for inv in uninvited:
-
-                friend = {
-                    'user_id': inv['id'],
-                    'username': inv['username'],
-                    'image_id': inv['image_id']
-                }
-
-                invite.append(friend)
-
-            temp['invite'] = invite
-
-        if temp['status'] == ACTIVE_GAME:
-            gifted = db(f"SELECT * FROM par WHERE \
-                user_id = {session['user_id']} AND \
-                game_id = {row['game_id']}")
-
-            # add the gifted id to the game
-            temp['gifted_id'] = gifted[0]['gifted_id']
-
-            # look for the gifted's username and image_id
-            gifted = db(f"SELECT * FROM users WHERE \
-                id = {temp['gifted_id']}")
-
-            temp['gifted_u'] = gifted[0]['username']
-            temp['gifted_img'] = gifted[0]['image_id']
-
-        # appends the friend dict to the list
-        games_unsorted.append(temp)
-
-    # sorts the friends by username
-    games = sorted(games_unsorted, key=lambda k: k['game_name'])
-
+    # if its a request to load pending games
     if int(request.args.get('s')) == PENDING_GAME:
-        return render_template("pending_games.html", \
-            darkmode=session["dark_mode"], games=games)
+        load_status = PENDING_GAME
+
+    # if its a request to see active games
+    elif int(request.args.get('s')) == ACTIVE_GAME:
+        load_status = ACTIVE_GAME
+
+    # if its a request to see finished games
+    elif int(request.args.get('s')) == FINISHED_GAME:
+        load_status = FINISHED_GAME
+
     else:
         return ""
 
-
-@app.route("/load_active_games", methods=["POST"])
-@login_required
-def load_active_games():
-    """loads the games associated with the logged in user"""
-
+    # an empty list of games
     games = []
 
-    # all user's active games
-    rows = db(f"SELECT * FROM games WHERE status = 1 AND id IN \
-        (SELECT game_id FROM par WHERE user_id = {session['user_id']}) \
-        ORDER BY game_name")
+    rows = db(f"SELECT * FROM games WHERE status = {load_status} AND id IN \
+            (SELECT game_id FROM par WHERE user_id = {session['user_id']}) \
+            ORDER BY game_name")
+
 
     for row in rows:
 
@@ -735,7 +665,7 @@ def load_active_games():
 
         # look for participants in this game
         rows_2 = db(f"SELECT * FROM users WHERE id IN \
-            (SELECT user_id FROM par WHERE game_id = {row['id']}) \
+            (SELECT user_id FROM par WHERE game_id = {game['game_id']}) \
             ORDER BY username")
 
         for row_2 in rows_2:
@@ -753,11 +683,97 @@ def load_active_games():
         # add participants to the game info
         game['par'] = participants
 
-        # add the gifted's info
-        rows_2 = db(f"SELECT * FROM users WHERE id IN \
-            (SELECT gifted_id FROM par WHERE user_id = {session['user_id']})")
+        # if its a pending game, it loads game requests and availabe inviteable friends
+        if load_status == PENDING_GAME:
 
-        game['gifted_u'] = rows_2[0]['username']
+            # a list for all the already invited friends
+            game_req = []
+
+            # get a list of all friends with a game request
+            rows_2 = db(f"SELECT * FROM users WHERE id IN \
+                (SELECT reciever_id FROM game_req WHERE \
+                game_id = {game['game_id']}) ORDER BY username")
+
+            for row_2 in rows_2:
+
+                # add the the requested user's info
+                req = {
+                'user_id': row_2['id'],
+                'username': row_2['username'],
+                'image_id': row_2['image_id']
+                }
+
+                # add the friend to the list
+                game_req.append(req)
+
+            # add the list to the game's info
+            game['game_req'] = game_req
+
+            # a list for all inviteable friends
+            invite = []
+
+            # get a list of all friends that can be invited
+            rows_2 = db(f"SELECT * FROM users WHERE id IN \
+                (SELECT friend_id FROM friends WHERE \
+                user_id = {session['user_id']} AND friend_id NOT IN \
+                (SELECT user_id FROM par WHERE \
+                game_id = {game['game_id']}) AND friend_id NOT IN \
+                (SELECT reciever_id FROM game_req WHERE \
+                game_id = {game['game_id']})) ORDER BY username")
+
+            for row_2 in rows_2:
+
+                # add the inviteable friend's info
+                inv = {
+                'user_id': row_2['id'],
+                'username': row_2['username'],
+                'image_id': row_2['image_id']
+                }
+
+                # add the friend to the list
+                invite.append(inv)
+
+            # add the list to the game's info
+            game['invite'] = invite
+
+        # if its an active game it loads the gifted's info
+        if load_status == ACTIVE_GAME:
+        
+            # add the gifted's info
+            rows_2 = db(f"SELECT * FROM users WHERE id IN \
+                (SELECT gifted_id FROM par WHERE user_id = {session['user_id']} \
+                AND game_id = {game['game_id']})")
+
+            game['gifted_u'] = rows_2[0]['username']
+
+        # if its a finished game it loads the gifted's info
+        if load_status == FINISHED_GAME:
+
+            # a list of gifted users
+            gifted = []
+
+            # itirate over the list of participabts
+            for p in participants:
+
+                # get the participant's gifted'd id
+                rows_2 = db(f"SELECT * FROM users WHERE id = \
+                    (SELECT gifted_id FROM par WHERE user_id = {p['user_id']} \
+                    AND game_id = {game['game_id']})")
+
+                # a dict of info relevant to the gifted
+                user = {
+                'user_id': rows_2[0]['id'],
+                'username': rows_2[0]['username'],
+                'image_id': rows_2[0]['image_id']
+                }
+
+                print(user)
+
+                # add the user to the gifted list
+                gifted.append(user)
+
+            # add the list to the game's info
+            game['gifted'] = gifted
 
         # look for the creator of the game
         rows_2 = db(f"SELECT * FROM users WHERE id IN \
@@ -773,10 +789,20 @@ def load_active_games():
 
         games.append(game)
 
-    return render_template("active_games.html", \
-        darkmode=session["dark_mode"], games=games)
+    # choose the correct template
+    if load_status == PENDING_GAME:
+        template = "pending_games.html"
 
+    elif load_status == ACTIVE_GAME:
+        template = "active_games.html"
 
+    elif load_status == FINISHED_GAME:
+        template = "/finished_games.html"
+    else:
+        flash("Invalid request")
+        template = "/"
+
+    return render_template(template, darkmode=session["dark_mode"], games=games)
 
 
 @app.route("/game_requests", methods=["GET"])
@@ -925,7 +951,7 @@ def activate_game():
     rows = db(f"SELECT * FROM games WHERE id = {game_id}")
 
     # checks if game_id exists
-    if len(rows) < 1:
+    if len(rows) == 0:
         flash("Invalid request")
         return redirect("/games")
 
@@ -950,17 +976,28 @@ def activate_game():
 
     # a list to insert participants to
     par_list = []
-    gifted_list = []
 
     for row in rows:
         par_list.append(row['user_id'])
-        gifted_list.append(row['user_id'])
 
-    shuffle(gifted_list)
+    # randomize participant's order
+    shuffle(par_list)
 
+    # a rotation variable
+    rot = int(len(par_list) / 2)
+
+    # an empty list to insert gited's id into
+    gifted_list = par_list
+
+    print(f"(MARK) the rot is : {rot}")
+
+    # construct the rotated list
+    gifted_list = gifted_list[rot:] + gifted_list[:rot]
+
+    # assign each player a gifted player
     for i in range(len(par_list)):
         db(f"UPDATE par SET gifted_id = {gifted_list[i]} WHERE \
-            user_id = {par_list[i]}")
+            user_id = {par_list[i]} AND game_id = {game_id}")
 
     # delete all game requests
     db(f"DELETE FROM game_req WHERE game_id = {game_id}")
@@ -971,9 +1008,73 @@ def activate_game():
 @app.route("/games", methods=["GET"])
 @login_required
 def games():
-    """Loads the requested games"""
+    """Loads the games page"""
 
     return render_template("games.html", darkmode=session["dark_mode"])
+
+
+@app.route("/delete_game", methods=["POST"])
+@login_required
+def delete_game():
+    """grants the admin the ability to delete the game 
+    and everything associated with it"""
+
+    # check if there was an html manipulation
+    if not request.form.get('game_id') or not request.form.get('game_id').isnumeric():
+        flash("Invalid request")
+        return redirect("/games")
+
+    game_id = int(request.form.get('game_id'))
+
+    # check if the game exists
+    rows = db(f"SELECT * FROM games WHERE id = {game_id}")
+
+    if len(rows) == 0:
+        flash("Invalid request")
+        return redirect("/games")
+
+    # check if the user is the admin of the game
+    if not rows[0]['admin_id'] == session['user_id']:
+        flash("You dont have permission to do that")
+        return redirect("/games")
+
+    # after confirming admin, proceeding to delete everything associated with the game
+    db(f"DELETE FROM games WHERE id = {game_id}")
+    db(f"DELETE FROM game_req WHERE game_id = {game_id}")
+    db(f"DELETE FROM par WHERE game_id = {game_id}")
+
+    flash("Game deleted successfully")
+    return redirect("/games")
+
+
+@app.route("/end_game", methods=["POST"])
+@login_required
+def end_game():
+    """changes the status of the game to FINISHED_GAME"""
+
+    # check if there was an html manipulation
+    if not request.form.get('game_id') or not request.form.get('game_id').isnumeric():
+        flash("Invalid request")
+        return redirect("/games")
+
+    game_id = int(request.form.get('game_id'))
+
+    # check if the game exists
+    rows = db(f"SELECT * FROM games WHERE id = {game_id}")
+
+    if len(rows) == 0:
+        flash("Invalid request")
+        return redirect("/games")
+
+    # check if the user is the admin of the game
+    if not rows[0]['admin_id'] == session['user_id']:
+        flash("You dont have permission to do that")
+        return redirect("/games")
+
+    db(f"UPDATE games SET status = {FINISHED_GAME} WHERE id = {game_id}")
+
+    flash("The game has finished!")
+    return redirect("/games")
 
 
 if __name__ == '__main__':

@@ -77,10 +77,52 @@
 	</div>
 	<dir></dir>
 
+    <div class="row">
+        <div class="col">
+            <button id ="toggle_finished_games" type="button" class="cstmbtn btn
+            {% if darkmode > 0 %}
+                btn-outline-light
+            {% else %}
+                btn-outline-dark
+            {% endif %}">Finished games</button>
+        </div>
+    </div>
+    <dir></dir>
+    <div class="row justify-content-center">
+        <div class="col-auto"id="fin_gm"></div>
+    </div>
+    <dir></dir>
+
 	<script type="text/javascript">
 
-		var click, click_p, click_r, click_a;
-		click = click_p = click_r = click_a = 1;
+		var click, click_p, click_r, click_a, click_f;
+		click = click_p = click_r = click_a = click_f = 1;
+
+        // an event listener when the create game button is clicked
+        document.getElementById('toggle_finished_games').addEventListener('click', function() {
+
+            // an XMLHttpRequest
+            var req = new XMLHttpRequest();
+
+            // when the readystate is 4 it will get the response and fill the html
+            req.onreadystatechange = function() {
+                if(req.readyState == 4 && req.status == 200){
+
+                    if(click_f > 0){
+                        $('#fin_gm').html(req.responseText);
+                        click_f *= -1;
+                    }
+                    else {
+                        $('#fin_gm').html("");
+                        click_f *= -1;
+                    }
+                }
+            }
+
+            req.open('GET', '/load_games?s=2', true);
+
+            req.send();
+        });
 
         // an event listener when the create game button is clicked
         document.getElementById('toggle_active_games').addEventListener('click', function() {
@@ -88,12 +130,10 @@
             // an XMLHttpRequest
             var req = new XMLHttpRequest();
 
-            // when the readystate is 4 it will get the response and put it in
-            // the tbody with the id of search_body
+            // when the readystate is 4 it will get the response and fill the html
             req.onreadystatechange = function() {
                 if(req.readyState == 4 && req.status == 200){
 
-                	// the html will be loaded to #crt_gm
                 	if(click_a > 0){
                 		$('#acv_gm').html(req.responseText);
                 		click_a *= -1;
@@ -105,10 +145,8 @@
                 }
             }
 
-            // it does a get request with the arg of q = (input.value)
-            req.open('POST', '/load_active_games', true);
+            req.open('GET', '/load_games?s=1', true);
 
-            // once it gets the response it sends it
             req.send();
         });
 
@@ -118,12 +156,10 @@
             // an XMLHttpRequest
             var req = new XMLHttpRequest();
 
-            // when the readystate is 4 it will get the response and put it in
-            // the tbody with the id of search_body
+            // when the readystate is 4 it will get the response and fill the html
             req.onreadystatechange = function() {
                 if(req.readyState == 4 && req.status == 200){
 
-                	// the html will be loaded to #crt_gm
                 	if(click > 0){
                 		$('#crt_gm').html(req.responseText);
                 		click *= -1;
@@ -135,10 +171,8 @@
                 }
             }
 
-            // it does a get request with the arg of q = (input.value)
             req.open('GET', '/create_game', true);
 
-            // once it gets the response it sends it
             req.send();
         });
 
@@ -148,12 +182,10 @@
             // an XMLHttpRequest
             var req = new XMLHttpRequest();
 
-            // when the readystate is 4 it will get the response and put it in
-            // the tbody with the id of search_body
+            // when the readystate is 4 it will get the response and fill the html
             req.onreadystatechange = function() {
                 if(req.readyState == 4 && req.status == 200){
 
-                	// the html will be loaded to #crt_gm
                 	if(click_p > 0){
                 		$('#pnd_gm').html(req.responseText);
                 		click_p *= -1;
@@ -165,10 +197,8 @@
                 }
             }
 
-            // it does a get request with the arg of q = (input.value)
             req.open('GET', '/load_games?s=0', true);
 
-            // once it gets the response it sends it
             req.send();
         });
 
@@ -178,12 +208,10 @@
             // an XMLHttpRequest
             var req = new XMLHttpRequest();
 
-            // when the readystate is 4 it will get the response and put it in
-            // the tbody with the id of search_body
+            // when the readystate is 4 it will get the response and fill the html
             req.onreadystatechange = function() {
                 if(req.readyState == 4 && req.status == 200){
 
-                	// the html will be loaded to #crt_gm
                 	if(click_r > 0){
                 		$('#gm_req').html(req.responseText);
                 		click_r *= -1;
@@ -195,10 +223,8 @@
                 }
             }
 
-            // it does a get request with the arg of q = (input.value)
             req.open('GET', '/game_requests', true);
 
-            // once it gets the response it sends it
             req.send();
         });
 

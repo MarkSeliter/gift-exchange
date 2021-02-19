@@ -1,0 +1,58 @@
+<div class="row justify-content-center" id="Active_games">
+
+	<div class="col-auto">
+		<h3>Finished games</h3>
+	</div>
+
+</div>
+<dir></dir>
+
+<div class="row justify-content-center">
+	<div class="col-auto" id="finished_games">
+	    <table class="table table-responsive table-borderless
+	    table-hover
+	    {% if darkmode > 0 %}
+    	    table-dark dark_background
+	    {% endif %}">
+		    <tbody>
+				{% for game in games %}
+        		<tr>
+        			<td>
+        				<p style="text-align: left !important; 
+        				white-space: pre-line;">
+        				Game name: {{ game['game_name'] }}
+        				Created by: {{ game['creator'] }}
+        				{{ game['game_desc'] }}<p>
+		        	</td>
+        			<td>
+	        			{% for i in game['par'] %}
+	        			{{ i['username'] }}<br>
+	        			{% endfor %}
+	        		</td>
+	        		<td style="color: green;">
+	        			{% for i in game['par'] %}
+	        			gifted <i class="fas fa-arrow-right"></i><br>
+	        			{% endfor %}
+	        		</td>
+	        		<td>
+	        			{% for i in game['gifted'] %}
+	        			{{ i['username'] }}<br>
+	        			{% endfor %}
+	        		</td>
+		        	{% if game['admin'] %}
+	        		<td>
+	        			<form action="/delete_game" method="post">
+	        				<input type="hidden" name="game_id"
+	        				value ="{{ game['game_id'] }}">
+	        				<button class="btn btn-outline-danger" type="submit">
+	        					Terminate
+	        				</button>
+	        			</form>
+	        		</td>
+	        		{% endif %}
+        		</tr>
+				{% endfor %}
+			</tbody>
+        </table>
+    </div>
+</div>

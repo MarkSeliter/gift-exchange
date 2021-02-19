@@ -50,14 +50,21 @@
 						</div><br>
 	        		{% if game['admin'] %}
 	        		<td>
-	        			<form action="/activate_game" method="post">
+	        			<form action="/end_game" method="post">
 	        				<input type="hidden" name="game_id" 
 	        				value ="{{ game['game_id'] }}">
 	        				<button class="btn btn-outline-success"
 	        				type="submit">
 	        					End game
 	        				</button>
-	        			</form>
+	        			</form><br>
+	        			<form action="/delete_game" method="post">
+	        				<input type="hidden" name="game_id"
+	        				value ="{{ game['game_id'] }}">
+	        				<button class="btn btn-outline-danger" type="submit">
+	        					Terminate
+	        				</button>
+	        			</form><br>
 	        		</td>
 	        		{% endif %}
         		</tr>
